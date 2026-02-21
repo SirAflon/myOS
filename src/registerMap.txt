@@ -1,0 +1,88 @@
+# ============================================================
+# x86 Hardware Register & Port Reference for OS Development
+# ============================================================
+
+# -----------------------------
+# PIC (8259 Programmable Interrupt Controller)
+# -----------------------------
+0x20 = Master PIC Command Port / send ICW1, OCW2, OCW3
+0x21 = Master PIC Data Port / vector offset, IRQ masks
+0xA0 = Slave PIC Command Port / send ICW1, OCW2, OCW3
+0xA1 = Slave PIC Data Port / vector offset, IRQ masks
+
+# PIC Initialization Words (ICW)
+0x11 = ICW1: start initialization sequence
+0x20 = ICW2: master PIC interrupt vector offset (IRQ0 → INT 0x20)
+0x28 = ICW2: slave PIC interrupt vector offset (IRQ8 → INT 0x28)
+0x04 = ICW3: master tells it has a slave on IRQ2
+0x02 = ICW3: slave tells its cascade identity
+0x01 = ICW4: 8086/88 mode
+0x00 = IRQ mask: unmask all IRQs (or mask bits individually)
+
+# -----------------------------
+# PIT (Programmable Interval Timer)
+# -----------------------------
+0x43 = PIT Command Register / select channel + mode
+0x40 = PIT Channel 0 Data / frequency divisor low+high byte
+
+# PIT Commands
+0x36 = Channel 0, mode 3 (square wave), lobyte/hibyte
+
+# PIT Frequency
+1193182 Hz = PIT base frequency
+Divisor = 1193182 / desired_frequency
+
+# -----------------------------
+# PS/2 Controller (Keyboard)
+# -----------------------------
+0x60 = PS/2 Data Port / read keycodes or send commands
+0x64 = PS/2 Command/Status Port / read status or send commands
+
+# -----------------------------
+# VGA Text Mode
+# -----------------------------
+0x3D4 = VGA Index Register / select internal VGA register
+0x3D5 = VGA Data Register / write value to selected register
+
+# Common VGA Registers
+0x0F = Cursor location low byte index
+0x0E = Cursor location high byte index
+
+# -----------------------------
+# CPU Control Registers
+# -----------------------------
+CR0.PE = bit 0 / enable protected mode
+CR0.PG = bit 31 / enable paging
+
+CR4.PAE = bit 5 / enable Physical Address Extension
+CR4.OSFXSR = bit 9 / enable SSE instructions
+CR4.OSXMMEXCPT = bit 10 / enable SSE exceptions
+
+CR3 = holds physical address of PML4 (in long mode)
+
+# -----------------------------
+# MSRs (Model Specific Registers)
+# -----------------------------
+MSR 0xC0000080 = EFER (Extended Feature Enable Register)
+EFER.LME = bit 8 / enable long mode
+EFER.NXE = bit 11 / enable NX bit (optional)
+
+# -----------------------------
+# GDT (Global Descriptor Table)
+# -----------------------------
+GDTR = holds pointer to GDT (limit + base)
+CS = code segment selector (0x08 in your setup)
+DS/ES/SS/FS/GS = data segment selectors (0x10 in your setup)
+
+# -----------------------------
+# Paging Structures (Long Mode)
+# -----------------------------
+PML4 = top-level page table (512 entries)
+PDPT = page directory pointer table
+PD   = page directory (can use 2MB pages)
+PT   = page table (for 4KB pages)
+
+Entry Flags:
+bit 0 = Present
+bit 1 = Writeable
+bit 7 = Page Size (1 = 2MB page)
