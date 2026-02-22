@@ -13,6 +13,8 @@ namespace Allocator {
         void setFree(uint64 index);
     }
     namespace Buddy {
+        constexpr uint64 MIN_ORDER = 4;   // 16 bytes
+        constexpr uint64 MAX_ORDER = 20;  // 1 MB
         void init(uint8* base, uint64 size);
         void* alloc(uint64 size);
         void free(void* ptr);

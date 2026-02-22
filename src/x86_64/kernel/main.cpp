@@ -1,4 +1,8 @@
 #include "modules/core.hpp"
+#include "modules/core/allocator.hpp"
+#include "modules/core/console.hpp"
+#include "modules/core/display.hpp"
+#include "modules/core/string.hpp"
 extern "C" uint8 _kernel_end[];
 
 
@@ -14,7 +18,10 @@ void initAllocator(){
     uint64 frameCount = 32768;
     Allocator::Bitmap::init(bitmapBase, frameCount);
     uint64 bitmapBytes = (frameCount + 7)/8;
-    uint8* heapBase = bitmapBase + bitmapBytes;
+    uint8* rawHeapBase = bitmapBase + bitmapBytes;
+    uint64 align = 1ULL << Allocator::Buddy::MAX_ORDER;
+    uint64 aligned = ((uint64)rawHeapBase + align -1) & ~(align -1);
+    uint8* heapBase = (uint8*)aligned;
     uint64 heapEnd = 0x01000000;
     uint64 heapSize = heapEnd - (uint64)heapBase;
     Allocator::Buddy::init(heapBase, heapSize);

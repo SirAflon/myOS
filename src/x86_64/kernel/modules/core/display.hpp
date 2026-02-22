@@ -14,4 +14,9 @@ namespace Display{
     void DeleteCharacterBehinde();
     void DeleteCharacterBefore();
     int GetPos(char);
+    void putChar(char);
+    void printNumber(uint64 n);
+    void printlnNumber(uint64 n);
+    void printHex(uint64 n);
+    void printlnHex(uint64 n);
 }

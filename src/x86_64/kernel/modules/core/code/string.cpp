@@ -6,6 +6,7 @@ namespace Core {
     strLength(0),
     strCapacity(0),
     hardCap(false){};
+
     void String::init(){
         pinit("",0,0);
     }
@@ -35,7 +36,11 @@ namespace Core {
     }
     String::String(const String& copy){
         hardCap = copy.hardCap;
-        pinit(copy.strBuffer,copy.strLength,copy.strCapacity);
+        uint64 cap = copy.strLength;
+        if(!hardCap)
+            cap = (cap==0)?0:cap *2;
+
+        pinit(copy.strBuffer,copy.strLength,cap);
     }
     String::String(String&& move){
         strBuffer = move.strBuffer;
@@ -198,6 +203,12 @@ namespace Core {
     //privatFunctions
     void String::pinit(const char* str,uint64 len,uint64 cap){
         strBuffer = (char*)Allocator::Buddy::alloc(cap+1);
+        if(!strBuffer){
+            strLength=7;
+            strCapacity=10;
+            return;
+        }
+
         for(uint64 i=0;i<len;++i)
             strBuffer[i] = str[i];
         strBuffer[len] = '\0';
@@ -422,6 +433,20 @@ namespace Core {
     }
     bool String::contains(char c)const{
         return find(c) >= 0;
+    }
+    void String::popBack(){
+        if(strLength == 0)
+            return;
+        strLength--;
+        strBuffer[strLength] = '\0';
+    }
+    void String::popBack(uint64 sizeToPop){
+        if(strLength == 0)
+            return;
+        if(strLength < sizeToPop)
+            sizeToPop = strLength;
+        strLength -= sizeToPop;
+        strBuffer[strLength] = '\0';
     }
     //static
     uint64 String::CalcLength(const char* str){

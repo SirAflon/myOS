@@ -1,19 +1,21 @@
 #include "../console.hpp"
 
 namespace Console {
-    static char inputBuffer[256];
-    static int bufferLen = 0;
-    bool newCommand = true;
-    const char* name = "<Console>";
-    const int nameLength = 9;
     Core::Array<Core::String> log;
     Core::String tmpstr;
+    Core::String inputBuffer;
+    const char* name = "<Console>";
+    const int nameLength = 9;
+    bool newCommand = true;
+    
     void init(){
         log.init(100);
         tmpstr.init();
+        inputBuffer.init();
     }
-    void Execute(const char* com){
-        log += Core::String(com);
+    void Execute(const Core::String& com){
+        log += com;
+        println(log[log.length() -1].buffer());
     }
     void KeyBoardOutput(){
         if(IO::KeyboardHasData()){
@@ -24,21 +26,20 @@ namespace Console {
                 switch(character){
                     case '\n':
                         newCommand = true;
-                        inputBuffer[bufferLen] = '\0';
                         Execute(inputBuffer);
-                        bufferLen = 0;
+                        inputBuffer.clear();
                         Display::NewLine();
                         break;
                     case 0x08:
+                        if(inputBuffer.isEmpty())
+                            break;
+                        inputBuffer.popBack();
                         if(Display::GetPos('x') > nameLength)
                             Display::DeleteCharacterBehinde();
                         break;
                     default:
-                        if(bufferLen < 255){
-                            inputBuffer[bufferLen++] = character;
-                            inputBuffer[bufferLen] = '\0';
-                            Display::print(msg);
-                        }
+                        inputBuffer += character;
+                        Display::print(msg);
                         break;
                 }
             }

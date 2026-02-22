@@ -1,5 +1,6 @@
 #pragma once
 #include "comHeader/array+arrayList.hpp"
+#include "console.hpp"
 namespace Core{
     template<typename T>
     struct Array{
@@ -16,12 +17,11 @@ namespace Core{
             buffCapacity(0){}
 
             void init(uint64 cap){
+                if(buffCapacity>0)
+                    return;
                 buffBuffer = (T*)Allocator::Buddy::alloc(sizeof(T)*cap);
                 buffCapacity = cap;
-                if(!Utilitys::Checks::isPrimary<T>()){
-                    for(uint64 i=0;i<cap;i++)
-                        buffBuffer[i].init();
-                }
+                buffLength = 0;
             }
             Array(uint64 cap)
             :buffBuffer((T*)Allocator::Buddy::alloc(sizeof(T)*cap)),
@@ -265,7 +265,10 @@ namespace Core{
                     buffBuffer[i].~T();
             }
             Array cut(uint64 index1, uint64 index2) {
-                Array tmp = at(index1, index2);
+                Optional<Array> opt = at(index1, index2);
+                if(!opt)
+                    return Array(0);
+                Array tmp = Utilitys::move(opt.value());
                 erase(index1, index2);
                 return tmp;
             }

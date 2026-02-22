@@ -11,16 +11,17 @@ namespace Display{
         }
         SetCursor(cursorX, cursorY);
     }
+    void putChar(char c){
+        int pos = cursorY * 80 + cursorX;
+        VGA[pos] = (0x0F << 8) | c;
+        cursorX++;
+        if(cursorX >= 80)
+            NewLine();
+        SetCursor(cursorX, cursorY);
+    }
     void print(const char* msg){
-        for (int i = 0; msg[i]; i++) {
-            char c = msg[i];
-            int pos = cursorY * 80 + cursorX;
-            VGA[pos] = (0x0F << 8) | c;
-            cursorX++;
-            if(cursorX >= 80)
-                NewLine();
-            SetCursor(cursorX, cursorY);
-        }
+        for (int i = 0; msg[i]; i++) 
+            putChar(msg[i]);
     }
     void println(const char* msg){
         print(msg);
@@ -59,5 +60,49 @@ namespace Display{
     }
     int GetPos(char ch){
         return (ch == 'x')? cursorX:cursorY;
+    }
+    void printNumber(uint64 n){
+        char buf[32];
+        int i = 0;
+
+        if (n == 0){
+            putChar('0');
+            return;
+        }
+
+        while (n > 0){
+            buf[i++] = static_cast<char>('0' + (n % 10));
+            n /= 10;
+        }
+
+        while (i--){
+            putChar(buf[i]);
+        }
+    }
+    void printlnNumber(uint64 n){
+        printNumber(n);
+        NewLine();
+    }
+    void printHex(uint64 n){
+        print("0x");
+        bool started = false;
+
+        for (int i = 60; i >= 0; i -= 4){
+            uint8 digit = (n >> i) & 0xF;
+            if (!started && digit == 0 && i != 0)
+                continue;
+            started = true;
+            if (digit < 10) 
+                putChar(static_cast<char>('0' + digit));
+            else 
+                putChar(static_cast<char>('A' + (digit - 10)));
+        }
+
+        if (!started)
+            putChar('0');
+    }
+    void printlnHex(uint64 n){
+        printHex(n);
+        NewLine();
     }
 }

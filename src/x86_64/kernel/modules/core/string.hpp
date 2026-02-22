@@ -75,6 +75,8 @@ namespace Core {
             uint64 hash() const;
             uint64 hash(hashTypes)const;
             bool contains(char c)const;
+            void popBack();
+            void popBack(uint64);
 
             static uint64 CalcLength(const char*);
     };

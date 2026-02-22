@@ -12,11 +12,16 @@ namespace Allocator {
         }
 
         bool isFree(uint64 index) {
-            return !(bitmap[index / 8] & (1 << (index % 8)));
+            uint64 byteIndex = index /8;
+            uint8 bit = static_cast<uint8>(index % 8);
+            uint8 mask = static_cast<uint8>(1u << bit);
+            return (bitmap[byteIndex] & mask) == 0;
         }
-
         void setUsed(uint64 index) {
-            bitmap[index / 8] |= (1 << (index % 8));
+            uint64 byteIndex = index /8;
+            uint8 bit = static_cast<uint8>(index % 8);
+            uint8 mask = static_cast<uint8>(1u << bit);
+            bitmap[byteIndex] |= mask;
         }
 
         void setFree(uint64 index) {
@@ -43,8 +48,6 @@ namespace Allocator {
         }
     }
     namespace Buddy {
-        constexpr uint64 MIN_ORDER = 4;   // 16 bytes
-        constexpr uint64 MAX_ORDER = 20;  // 1 MB
         constexpr uint64 NUM_ORDERS = MAX_ORDER - MIN_ORDER + 1;
 
         struct FreeBlock {
@@ -56,20 +59,28 @@ namespace Allocator {
         static uint64 heapSize = 0;
 
         void init(uint8* base, uint64 size) {
-            uint64 order = MAX_ORDER;
-            while ((1ULL << order) > heapSize && order > MIN_ORDER)
-                order--;
-
             heapBase = base;
             heapSize = size;
 
             for (uint64 i = 0; i < NUM_ORDERS; i++)
                 freeLists[i] = nullptr;
 
-            
-            freeLists[order - MIN_ORDER] = (FreeBlock*)base;
-            freeLists[order - MIN_ORDER]->next = nullptr;
+            uint64 offset = 0;
+            while (offset + (1ULL << MIN_ORDER) <= heapSize) {
+                // choose largest block that fits at this offset
+                uint64 order = MAX_ORDER;
+                while (order > MIN_ORDER && (offset + (1ULL << order) > heapSize))
+                    order--;
+
+                uint64 blockSize = 1ULL << order;
+                FreeBlock* block = (FreeBlock*)(heapBase + offset);
+                block->next = freeLists[order - MIN_ORDER];
+                freeLists[order - MIN_ORDER] = block;
+
+                offset += blockSize;
+            }
         }
+
 
         void* alloc(uint64 size) {
             size += sizeof(uint64);
@@ -95,7 +106,8 @@ namespace Allocator {
 
             while (i > index) {
                 i--;
-                uint64 blockSize = 1ULL << i;
+                uint64 splitOrder = MIN_ORDER + i;
+                uint64 blockSize = 1ULL << splitOrder;
                 uint8* blockAddr = (uint8*)block;
                 FreeBlock* buddy = (FreeBlock*)(blockAddr + blockSize);
                 buddy->next = freeLists[i];
