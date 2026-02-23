@@ -79,6 +79,7 @@ namespace Core {
             bool contains(char c)const;
             void popBack();
             void popBack(uint64);
+            uint64 Count(const char);
 
             static uint64 CalcLength(const char*);
     };

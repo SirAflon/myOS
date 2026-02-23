@@ -468,4 +468,11 @@ namespace Core {
             len++;
         return len;
     }
+    uint64 String::Count(const char ch){
+        uint64 out=0;
+        for(uint64 i=0;i<strLength;i++)
+            if(strBuffer[i] == ch)
+                out++;
+        return out;
+    }
 }

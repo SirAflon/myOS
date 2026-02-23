@@ -435,6 +435,13 @@ namespace Core{
             void shrinkTo(uint64 index){
                 erase(index,buffLength-1);
             }
+            uint64 Count(const T* in){
+                uint64 out=0;
+                for(uint64 i=0;i<buffLength;i++)
+                    if(buffBuffer[i] == in)
+                        out++;
+                return out;
+            }
             //static
 
     };
