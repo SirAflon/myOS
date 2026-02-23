@@ -19,4 +19,6 @@ namespace Display{
     void printlnNumber(uint64 n);
     void printHex(uint64 n);
     void printlnHex(uint64 n);
+    char GetHeightInLines();
+    char GetCharacterInLines();
 }

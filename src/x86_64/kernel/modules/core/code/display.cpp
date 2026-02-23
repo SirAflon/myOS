@@ -3,10 +3,12 @@ namespace Display{
     static inline volatile uint16* const VGA= (uint16*)0xB8000;
     static int cursorX=0;
     static int cursorY=0;
+    static char lines = 24;
+    static char charcterInLines = 80;
     void NewLine(){
         cursorX = 0;
         cursorY++;
-        if(cursorY >= 25){
+        if(cursorY >= lines+1){
             cursorY = 24;
         }
         SetCursor(cursorX, cursorY);
@@ -104,5 +106,11 @@ namespace Display{
     void printlnHex(uint64 n){
         printHex(n);
         NewLine();
+    }
+    char GetHeightInLines(){
+        return lines;
+    }
+    char GetCharacterInLines(){
+        return charcterInLines;
     }
 }

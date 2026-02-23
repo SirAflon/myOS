@@ -14,6 +14,6 @@ namespace Console {
     void SetCursor(int x,int y);
     void ClearScreen();
     void ClearLog();
-    void printLog();
+    void RenderLog();
     void init();
 }
