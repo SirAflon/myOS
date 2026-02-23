@@ -24,7 +24,7 @@ namespace Console {
         historyIndex = -1;
         logScroll = log.length();
         RenderLog();
-        
+
     }
     void KeyBoardOutput(){
         if(!IO::KeyboardHasData())

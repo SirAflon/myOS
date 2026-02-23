@@ -197,6 +197,19 @@ namespace Core {
     bool String::operator!=(const String& s)const{
         return !(*this == s);
     }
+    bool String::operator<(const String& s)const{
+        uint64 n = (strLength < s.strLength)? strLength:s.strLength;
+        for(uint64 i= 0;i<n;++i){
+            if(strBuffer[i] < s[i]) 
+                return true;
+            if(strBuffer[i] > s[i])
+                return false;
+        }
+        return (strLength < s.strLength);
+    }
+    bool String::operator>(const String& s)const{
+        return s < *this;
+    }
     String::operator bool()const{
         return !(strLength==0);
     }

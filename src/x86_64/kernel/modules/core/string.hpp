@@ -37,6 +37,8 @@ namespace Core {
             const char& operator[](uint64) const;
             bool operator==(const String&)const;
             bool operator!=(const String&)const;
+            bool operator<(const String&)const;
+            bool operator>(const String&)const;
             operator bool()const;
 
             ~String();

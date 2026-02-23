@@ -318,5 +318,14 @@ namespace Core{
                     new (&buffBuffer[index + i]) T(arr.buffBuffer[i]);
                 buffLength = newLen;
             }
+            bool includes(T* includedData){
+                for(uint64 i=0;i<buffLength;i++)
+                    if(buffBuffer[i]==includedData)
+                        return true;
+                return false;
+            }
+            void shrinkTo(uint64 index){
+                erase(index,buffLength-1);
+            }
     };
 }

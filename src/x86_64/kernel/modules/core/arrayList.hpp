@@ -426,6 +426,15 @@ namespace Core{
             Core::Array<T> toArray(){
                 return Core::Array<T>(Utilitys::move(*this));
             }
+            bool includes(T* includedData){
+                for(uint64 i=0;i<buffLength;i++)
+                    if(buffBuffer[i]==includedData)
+                        return true;
+                return false;
+            }
+            void shrinkTo(uint64 index){
+                erase(index,buffLength-1);
+            }
             //static
 
     };
