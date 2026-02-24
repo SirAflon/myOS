@@ -4,7 +4,7 @@ namespace Core{
     namespace Math{
         template<typename T>
         constexpr T nextPow2(T value){
-            if constexpr (!Utilitys::Checks::isNumeric<T>)
+            if constexpr (!Utilitys::Checks::isNumeric<T>())
                 return 0;
             if(value <= 1)
                 return 1;

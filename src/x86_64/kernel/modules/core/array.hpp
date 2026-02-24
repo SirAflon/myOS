@@ -29,26 +29,26 @@ namespace Core{
             buffCapacity(cap){}
 
             explicit Array(const Core::ArrayList<T>& copy)
-            :buffLength(copy.buffLength),
-            buffCapacity(copy.buffCapacity),
-            buffBuffer((T*)Allocator::Buddy::alloc(sizeof(T)*buffCapacity)){
+            :buffBuffer((T*)Allocator::Buddy::alloc(sizeof(T)*copy.buffCapacity)),
+            buffLength(copy.buffLength),
+            buffCapacity(copy.buffCapacity){
                 for(uint64 i=0;i<buffLength;++i)
                     new (&buffBuffer[i]) T(copy.buffBuffer[i]);
             }
 
             explicit Array(Core::ArrayList<T>&& move)
-            :buffLength(move.buffLength),
-            buffCapacity(move.buffCapacity),
-            buffBuffer((T*)Allocator::Buddy::alloc(sizeof(T)*buffCapacity)){
+            :buffBuffer((T*)Allocator::Buddy::alloc(sizeof(T)*move.buffCapacity)),
+            buffLength(move.buffLength),
+            buffCapacity(move.buffCapacity){
                 for(uint64 i=0;i<buffLength;++i)
                     new (&buffBuffer[i]) T(Utilitys::move(move.buffBuffer[i]));
                 move.clear();
             }
 
             Array(const Array& copy)
-            :buffLength(copy.buffLength),
-            buffCapacity(copy.buffCapacity),
-            buffBuffer((T*)Allocator::Buddy::alloc(sizeof(T)*buffCapacity)){
+            :buffBuffer((T*)Allocator::Buddy::alloc(sizeof(T)*copy.buffCapacity)),
+            buffLength(copy.buffLength),
+            buffCapacity(copy.buffCapacity){
                 for(uint64 i = 0; i < buffLength; i++)
                     new (&buffBuffer[i]) T(copy.buffBuffer[i]);
             }

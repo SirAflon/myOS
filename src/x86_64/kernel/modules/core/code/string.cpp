@@ -476,7 +476,7 @@ namespace Core {
     uint64 String::lastIndexOf(const char ch)const{
         uint64 lastIndex=0;
         for(uint64 i=0;i<strLength;i++)
-            if(strBuffer[i])
+            if(strBuffer[i]==ch)
                 lastIndex = i;
         return lastIndex;
     }

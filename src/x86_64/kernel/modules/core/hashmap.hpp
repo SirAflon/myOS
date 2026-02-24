@@ -3,6 +3,7 @@
 #include "hashTypes.hpp"
 #include "comHeader/array+arrayList.hpp"
 #include "math.hpp"
+#include "utilitys.hpp"
 namespace Core{
     namespace Hash{
         template<typename Key, typename Value>
@@ -16,7 +17,7 @@ namespace Core{
                 };
                 void rehash(){
                     uint64 newCap= Core::Math::nextPow2(table.length()*2);
-                    Core::Array<Entry> old = Utilitys::move(table);
+                    Core::Array<Entry> old{Utilitys::move(table)};
                     table.reserve(newCap);
                     for(uint64 i=0;i<newCap;i++)
                         table += Entry{};
@@ -42,10 +43,10 @@ namespace Core{
                 }
 
                 void insert(const Key& key,const Value& value){
-                    if((float)count / table.length()>loadFactor)
+                    if(static_cast<double>(count) / static_cast<double>(table.length())>loadFactor)
                         rehash();
                     uint64 mask = table.length() -1;
-                    uint64 index = Core::Hash::hash(hashType,key,0) & mask;
+                    uint64 index = Core::Hash::hash(hashType,&key,0) & mask;
 
                     while(true){
                         Entry& ent = table[index];
@@ -64,17 +65,15 @@ namespace Core{
                         index = (index+1)&mask;
                     }
                 }
-                bool get(const Key& key,Value& out){
+                Value* get(const Key& key){
                     uint64 mask = table.length()-1;
-                    uint64 index = Core::Hash::hash(hashType,key,0) & mask;
+                    uint64 index = Core::Hash::hash(hashType,&key,0) & mask;
                     while(true){
                         Entry& ent = table[index];
                         if(!ent.used && !ent.tombstone)
-                            return false;
-                        if(ent.used && ent.key == key){
-                            out = ent.value;
-                            return true;
-                        }
+                            return nullptr;
+                        if(ent.used && ent.key == key)
+                            return &ent.value;
                         index = (index+1) & mask;
                     }
                 }
@@ -84,7 +83,7 @@ namespace Core{
                 }
                 void remove(const Key& key){
                     uint64 mask = table.length()-1;
-                    uint64 index = Core::Hash::hash(hashType,key,0) & mask;
+                    uint64 index = Core::Hash::hash(hashType,&key,0) & mask;
                     while(true){
                         Entry& ent = table[index];
                         if(!ent.used && !ent.tombstone)

@@ -113,7 +113,8 @@ namespace Core{
             
                 mdataType* get(const keyType& key){
                     if(nodes.length() == 0) 
-                        return nullptr;
+                        
+                    return nullptr;
                     return searchRecursive(0, key);
                 }
 

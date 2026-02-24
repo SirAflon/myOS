@@ -404,7 +404,7 @@ namespace Hash {
                 return 0;
         }
     }
-        inline uint64 hash(hashTypes type,const void* ptr,uint64 len){
+    inline uint64 hash(hashTypes type,const void* ptr,uint64 len){
         switch(type){
             case hashTypes::FNV1a:
                 return FNV1a(ptr,len);

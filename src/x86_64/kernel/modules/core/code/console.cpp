@@ -22,7 +22,7 @@ namespace Console {
         if(!com.isEmpty())
             history  += com;
         historyIndex = -1;
-        logScroll = log.length();
+        logScroll = static_cast<char>(log.length());
         RenderLog();
 
     }
@@ -83,7 +83,7 @@ namespace Console {
         log += pstr;
         Display::println(ch);
         pstr.clear();
-        logScroll = log.length();
+        logScroll = static_cast<char>(log.length());
         RenderLog();
     }
     void print(const char* ch){
@@ -94,7 +94,7 @@ namespace Console {
         Display::ClearScreen();
 
         const char screenLines = Display::GetHeightInLines();
-        char total = log.length();
+        char total = static_cast<char>(log.length());
         if(logScroll + screenLines > total)
             logScroll = total > screenLines ? total - screenLines : 0;
         for(char i=0;i<screenLines;i++){
@@ -109,7 +109,7 @@ namespace Console {
         log += tmpstr;
         Display::NewLine();   
         tmpstr.clear();     
-        logScroll = log.length();
+        logScroll = static_cast<char>(log.length());
         RenderLog();
     }
     void ClearScreen(){

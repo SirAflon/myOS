@@ -1,5 +1,5 @@
 #include "../fileSystem.hpp"
-
+#include <cstdlib>
 
 namespace{
     uint64 ids =0;
@@ -40,7 +40,7 @@ namespace{
             return Core::String("/");
         return path.subString(0, lastSlash);
     }
-    Core::String getName(const Core::String& rawPath){
+    [[maybe_unused]] Core::String getName(const Core::String& rawPath){
         Core::String path = normalize(rawPath);
         if(path =="/")
             return Core::String("/");
@@ -77,8 +77,19 @@ namespace{
         uint32 checksum;
     };
     Core::Trees::bTree<Core::String, FileMeta> fileTree{};
+    Core::Hash::Map<Core::String, Core::Array<Core::String>> dirIndex;
 }
 namespace fileSystem{
+    void addToIndex(const Core::String& path){
+        Core::String parent = getParent(path);
+        Core::Array<Core::String>* arr = dirIndex.get(parent);
+        if(!arr){
+            Core::Array<Core::String> newArr;
+            newArr += path;
+            dirIndex.insert(parent,newArr);
+        }else
+            *arr += path;
+    }
     void init(){
 
     }
@@ -92,6 +103,7 @@ namespace fileSystem{
         meta.dataBlockCount = 1;
         meta.ownerID = 0;
         fileTree.add(path,meta);
+        addToIndex(path);
     }
     void mkFile(const Core::String& rawPath){
         Core::String path = normalize(rawPath);
@@ -103,12 +115,27 @@ namespace fileSystem{
         meta.dataBlockCount = 1;
         meta.ownerID = 0;
         fileTree.add(path,meta);
+        addToIndex(path);
     }
     Core::Array<Core::String> ls(const Core::String& rawPath){
-        return Core::Array<Core::String>(0);
+        Core::Array<Core::String>* arr = dirIndex.get(normalize(rawPath));
+        if(!arr)
+            return Core::Array<Core::String>(0);
+        return Core::Array<Core::String>(*arr);
     }
     Core::Array<Core::String> find(const Core::String& pattern,const Core::String& startRawPath){
-        return Core::Array<Core::String>(0);
+        Core::String pat = normalize(pattern);
+        Core::Array<Core::String>* arr = dirIndex.get(normalize(startRawPath));
+        if(!arr)
+            return Core::Array<Core::String>(0);
+        Core::ArrayList<Core::String> result;
+
+        for(uint64 i=0;i< arr->length();++i){
+            const Core::String& child = (*arr)[i];
+            if(child.contains(pat))
+                result += child;
+        }
+        return Core::Array<Core::String>(result);
     }
     void rename(const Core::String& oldRawPath,const Core::String& newRawPath){
         Core::String oldPath = normalize(oldRawPath);
@@ -118,9 +145,11 @@ namespace fileSystem{
             return;
     }
     void move(const Core::String& sourceRawPath,const Core::String& destinationRawPath){
-
+        (void)sourceRawPath;
+        (void)destinationRawPath;
     }
     void destroy(const Core::String& rawPath){
+        (void)rawPath;
     }
     bool exists(const Core::String& rawPath){
         return fileTree.get(normalize(rawPath));

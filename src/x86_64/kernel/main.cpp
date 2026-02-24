@@ -22,7 +22,7 @@ void initAllocator(){
     uint64 align = 1ULL << Allocator::Buddy::MAX_ORDER;
     uint64 aligned = ((uint64)rawHeapBase + align -1) & ~(align -1);
     uint8* heapBase = (uint8*)aligned;
-    uint64 heapEnd = 0x01000000;
+    uint64 heapEnd = 0x04000000; //64MiB
     uint64 heapSize = heapEnd - (uint64)heapBase;
     Allocator::Buddy::init(heapBase, heapSize);
 }
