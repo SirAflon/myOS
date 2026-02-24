@@ -34,7 +34,7 @@ namespace Core {
             String operator+(const char*)const;
             String operator+(const String&)const;
             char& operator[](uint64);
-            const char& operator[](uint64) const;
+            const char& operator[](uint64)const;
             bool operator==(const String&)const;
             bool operator!=(const String&)const;
             bool operator<(const String&)const;
@@ -43,14 +43,14 @@ namespace Core {
 
             ~String();
 
-            uint64 length() const;
-            uint64 capacity() const;
+            uint64 length()const;
+            uint64 capacity()const;
             void SetCapacity(uint64);
-            bool hardCapacity() const;
+            bool hardCapacity()const;
             void SetHardCapacity(bool);
             void SetHardCapacity(uint64);
             char* buffer();
-            const char* buffer() const;
+            const char* buffer()const;
             void clear();
             void shrinkToFit();
             char getAt(uint64)const;

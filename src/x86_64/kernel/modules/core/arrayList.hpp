@@ -410,6 +410,11 @@ namespace Core{
                     new (&buffBuffer[index + i]) T(arr.buffBuffer[i]);
                 buffLength = newLen;
             }
+            void put(const T& tmp,uint64 index){
+                if(buffLength ==0 || index > buffLength)
+                    return;
+                buffBuffer[index] = tmp;
+            }
             void resize(uint64 newLen, const T& fill) {
                 if (newLen > buffCapacity) {
                     if (hardCap)

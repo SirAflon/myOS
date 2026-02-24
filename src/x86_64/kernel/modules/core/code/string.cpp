@@ -461,13 +461,6 @@ namespace Core {
         strLength -= sizeToPop;
         strBuffer[strLength] = '\0';
     }
-    //static
-    uint64 String::CalcLength(const char* str){
-        uint64 len = 0;
-        while(str[len] != '\0')
-            len++;
-        return len;
-    }
     uint64 String::Count(const char ch){
         uint64 out=0;
         for(uint64 i=0;i<strLength;i++)
@@ -475,4 +468,12 @@ namespace Core {
                 out++;
         return out;
     }
+    //static
+    uint64 String::CalcLength(const char* str){
+        uint64 len = 0;
+        while(str[len] != '\0')
+            len++;
+        return len;
+    }
+
 }
