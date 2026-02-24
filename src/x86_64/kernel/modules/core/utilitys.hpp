@@ -140,6 +140,12 @@ namespace Utilitys{
 
     namespace Checks{
         template<typename T>
+        constexpr bool isNumeric(){
+            if(!isPrimaryType<T>().value || isBoolType<T>())
+                return false;
+            return true;
+        }
+        template<typename T>
         constexpr bool isPrimary(){
             return isPrimaryType<T>().value;
         }

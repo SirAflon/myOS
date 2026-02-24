@@ -194,6 +194,11 @@ namespace Core {
                 return false;
         return true;
     }
+    bool String::operator==(const char* s)const{
+        Core::String tmp;
+        tmp += s;
+        return *this == tmp;
+    }
     bool String::operator!=(const String& s)const{
         return !(*this == s);
     }
@@ -468,6 +473,33 @@ namespace Core {
                 out++;
         return out;
     }
+    uint64 String::lastIndexOf(const char ch)const{
+        uint64 lastIndex=0;
+        for(uint64 i=0;i<strLength;i++)
+            if(strBuffer[i])
+                lastIndex = i;
+        return lastIndex;
+    }
+    uint64 String::firstIndexOf(const char ch)const{
+        for(uint64 i=0;i<strLength;i++)
+            if(strBuffer[i]==ch)
+                return i;
+        return 0;
+    }
+    char* String::begin() {
+        return strBuffer;
+    }
+    char* String::end()   {
+        return strBuffer + strLength;
+    }
+
+    const char* String::begin() const {
+        return strBuffer;
+    }
+    const char* String::end()   const { 
+        return strBuffer + strLength; 
+    }
+
     //static
     uint64 String::CalcLength(const char* str){
         uint64 len = 0;

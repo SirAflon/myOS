@@ -36,6 +36,7 @@ namespace Core {
             char& operator[](uint64);
             const char& operator[](uint64)const;
             bool operator==(const String&)const;
+            bool operator==(const char*)const;
             bool operator!=(const String&)const;
             bool operator<(const String&)const;
             bool operator>(const String&)const;
@@ -80,6 +81,14 @@ namespace Core {
             void popBack();
             void popBack(uint64);
             uint64 Count(const char);
+            uint64 lastIndexOf(const char)const;
+            uint64 firstIndexOf(const char)const;
+            char* begin();
+            char* end();
+
+            const char* begin()const;
+            const char* end()const;
+
 
             static uint64 CalcLength(const char*);
     };

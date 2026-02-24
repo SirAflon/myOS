@@ -38,7 +38,7 @@ namespace Core{
 
             explicit Array(Core::ArrayList<T>&& move)
             :buffLength(move.buffLength),
-            buffCapacity(move.buffLength),
+            buffCapacity(move.buffCapacity),
             buffBuffer((T*)Allocator::Buddy::alloc(sizeof(T)*buffCapacity)){
                 for(uint64 i=0;i<buffLength;++i)
                     new (&buffBuffer[i]) T(Utilitys::move(move.buffBuffer[i]));
@@ -333,6 +333,19 @@ namespace Core{
                     if(buffBuffer[i] == in)
                         out++;
                 return out;
+            }
+            char* begin() {
+                return buffBuffer;
+             }
+            char* Send()   {
+                return buffBuffer + buffLength;
+            }
+
+            const char* begin() const {
+                return buffBuffer;
+            }
+            const char* end()   const { 
+                return buffBuffer + buffLength; 
             }
     };
 }

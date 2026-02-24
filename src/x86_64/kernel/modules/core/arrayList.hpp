@@ -447,6 +447,19 @@ namespace Core{
                         out++;
                 return out;
             }
+            char* begin() {
+                return buffBuffer;
+             }
+            char* Send()   {
+                return buffBuffer + buffLength;
+            }
+
+            const char* begin() const {
+                return buffBuffer;
+            }
+            const char* end()   const { 
+                return buffBuffer + buffLength; 
+            }
             //static
 
     };

@@ -4,18 +4,18 @@
 #include "string.hpp"
 namespace fileSystem{
     void init();
-    void mkdir(const Core::String& path);
-    void mkfile(const Core::String& path);
+    void mkdir(const Core::String& rawPath);
+    void mkfile(const Core::String& rawPath);
     void mkdir(const Core::String& path,uint32 owner);
     void mkfile(const Core::String& path,uint32 owner);
-    Core::Array<Core::String> ls(const Core::String& path);
-    Core::Array<Core::String> find(const Core::String& pattern,const Core::String& startPath);
-    void rename(const Core::String& oldPath,const Core::String& newPath);
-    void move(const Core::String& sourcePath,const Core::String& destinationPath);
-    void destroy(const Core::String& path);
-    bool exists(const Core::String& path);
-    bool isDir(const Core::String& path);
-    bool isFile(const Core::String& path);
+    Core::Array<Core::String> ls(const Core::String& rawPath);
+    Core::Array<Core::String> find(const Core::String& pattern,const Core::String& startRawPath);
+    void rename(const Core::String& oldRawPath,const Core::String& newRawPath);
+    void move(const Core::String& sourceRawPath,const Core::String& destinationRawPath);
+    void destroy(const Core::String& rawPath);
+    bool exists(const Core::String& rawPath);
+    bool isDir(const Core::String& rawPath);
+    bool isFile(const Core::String& rawPath);
 
 
     void saveJournal();

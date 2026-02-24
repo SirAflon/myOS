@@ -56,12 +56,16 @@ string.o: src/x86_64/kernel/modules/core/code/string.cpp
 allocator.o: src/x86_64/kernel/modules/core/code/allocator.cpp
 	$(CC) $(CXXFLAGS) -c src/x86_64/kernel/modules/core/code/allocator.cpp -o allocator.o
 
-filesystem.o: src/x86_64/kernel/modules/core/code/filesystem.cpp
-	$(CC) $(CXXFLAGS) -c src/x86_64/kernel/modules/core/code/filesystem.cpp -o filesystem.o
+filesystem.o: src/x86_64/kernel/modules/core/code/fileSystem.cpp
+	$(CC) $(CXXFLAGS) -c src/x86_64/kernel/modules/core/code/fileSystem.cpp -o filesystem.o
 
-longMode.elf: longMode.o kernel.o display.o lowlevelaccess.o io.o console.o string.o allocator.o filesystem.o linker/longMode.ld
+math.o: src/x86_64/kernel/modules/core/code/math.cpp
+	$(CC) $(CXXFLAGS) -c src/x86_64/kernel/modules/core/code/math.cpp -o math.o
+
+
+longMode.elf: longMode.o kernel.o display.o lowlevelaccess.o io.o console.o string.o allocator.o filesystem.o math.o linker/longMode.ld
 	$(LD64) -T linker/longMode.ld -o longMode.elf \
-		longMode.o kernel.o display.o lowlevelaccess.o allocator.o io.o console.o string.o filesystem.o
+		longMode.o kernel.o display.o lowlevelaccess.o allocator.o io.o console.o string.o filesystem.o math.o
 
 longMode.bin: longMode.elf
 	objcopy -O binary longMode.elf longMode.bin
