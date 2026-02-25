@@ -499,6 +499,17 @@ namespace Core {
     const char* String::end()   const { 
         return strBuffer + strLength; 
     }
+    Core::Array<Core::String> String::split(const char ch)const{
+        Core::ArrayList<Core::String> arr(16);
+        uint64 last=0;
+        for(uint64 i=0;i<strLength;i++){
+            if(strBuffer[i] == ch){
+                arr += getAt(last,i);
+                last = i;
+            }
+        }
+        return Core::Array<Core::String>(arr);
+    }
 
     //static
     uint64 String::CalcLength(const char* str){

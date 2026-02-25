@@ -3,6 +3,8 @@
 #include "hashTypes.hpp"
 #include "lowLevelAccess.hpp"
 #include "allocator.hpp"
+#include "comHeader/array+arrayList.hpp"
+
 namespace Core {
     struct String{
         private:
@@ -85,9 +87,9 @@ namespace Core {
             uint64 firstIndexOf(const char)const;
             char* begin();
             char* end();
-
             const char* begin()const;
             const char* end()const;
+            Core::Array<Core::String> split(const char)const; 
 
 
             static uint64 CalcLength(const char*);

@@ -1,5 +1,25 @@
 #include "../console.hpp"
 
+typedef void (*commandFunc)(const char* args);
+typedef struct{
+    const char* name;
+    bool isNative=false;
+    commandFunc func;
+    const char* help;
+} CommandEntry;
+void cmdEcho(const char* args){
+    Console::println(args);
+}
+void cmdClear(const char* args){
+    Console::ClearLog();
+}
+void cmdReboot(const char* args){
+
+}
+void cmdShutdown(const char* args){
+
+}
+Core::Hash::Map<const char*, CommandEntry>* commandMap;
 namespace Console {
     Core::Array<Core::String> log;
     Core::Array<Core::String> history;
@@ -15,13 +35,21 @@ namespace Console {
         history.init(100);
         tmpstr.init();
         inputBuffer.init();
+        commandMap = Utilitys::GlobalVariable<Core::Hash::Map<const char*, CommandEntry>>();
+        commandMap->init(64);
+        commandMap->insert("echo", CommandEntry{"echo",true,cmdEcho,"Prints into the console"});
+        commandMap->insert("clear", CommandEntry{"clear",true,cmdClear,"Clears the log"});
     }
-    void Execute(const Core::String& com){
+    void Execute(Core::String& com){
         log += Core::String("<Execute>") + com;
         if(!com.isEmpty())
             history  += com;
         historyIndex = -1;
         logScroll = static_cast<char>(log.length());
+        com.trim();
+        Core::Array<Core::String> parts = com.split(com);
+        CommandEntry* cmd = commandMap->get(parts[0].buffer());
+
         RenderLog();
     }
     void KeyBoardOutput(){

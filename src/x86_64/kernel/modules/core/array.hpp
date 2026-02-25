@@ -1,6 +1,5 @@
 #pragma once
 #include "comHeader/array+arrayList.hpp"
-#include "console.hpp"
 namespace Core{
     template<typename T>
     struct Array{
