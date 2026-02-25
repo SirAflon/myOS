@@ -11,13 +11,8 @@ void cmdEcho(const char* args){
     Console::println(args);
 }
 void cmdClear(const char* args){
+    (void) args;
     Console::ClearLog();
-}
-void cmdReboot(const char* args){
-
-}
-void cmdShutdown(const char* args){
-
 }
 Core::Hash::Map<const char*, CommandEntry>* commandMap;
 namespace Console {
@@ -38,6 +33,7 @@ namespace Console {
         commandMap = Utilitys::GlobalVariable<Core::Hash::Map<const char*, CommandEntry>>();
         commandMap->init(64);
         commandMap->insert("echo", CommandEntry{"echo",true,cmdEcho,"Prints into the console"});
+                                LowLevelAccess::Hlt();
         commandMap->insert("clear", CommandEntry{"clear",true,cmdClear,"Clears the log"});
     }
     void Execute(Core::String& com){
@@ -47,9 +43,9 @@ namespace Console {
         historyIndex = -1;
         logScroll = static_cast<char>(log.length());
         com.trim();
-        Core::Array<Core::String> parts = com.split(com);
-        CommandEntry* cmd = commandMap->get(parts[0].buffer());
-
+        const char* co = com.cut(0,com.firstIndexOf(' ')).buffer();
+        CommandEntry* cmd = commandMap->get(co);
+        cmd->func(com.buffer());
         RenderLog();
     }
     void KeyBoardOutput(){

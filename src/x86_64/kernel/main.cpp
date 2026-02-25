@@ -1,4 +1,5 @@
 #include "modules/core.hpp"
+#include "modules/core/lowLevelAccess.hpp"
 extern "C" uint8 _kernel_end[];
 
 
@@ -27,9 +28,11 @@ extern "C" void KernelStart(){
     //Sector in boot at line 57 as the kernel gets bigger (longmode.bin(size in bytes)+511)/512
     Console::ClearScreen();
     initAllocator();
-    Console::init();
     fileSystem::init();
+    Console::init();
     Console::println("Starting Kernel ...");
     Console::println("Allocator Initalised");
+    Console::println("FileSystem Initalised");
+    Console::println("Console Initalised");
     KernelRun();
 }

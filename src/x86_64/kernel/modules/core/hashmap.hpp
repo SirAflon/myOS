@@ -3,6 +3,7 @@
 #include "hashTypes.hpp"
 #include "comHeader/array+arrayList.hpp"
 #include "math.hpp"
+#include "string.hpp"
 #include "utilitys.hpp"
 namespace Core{
     namespace Hash{
@@ -24,18 +25,44 @@ namespace Core{
                     count =0;
                     for(uint64 i=0;i<old.length();i++)
                         if(old[i].used && !old[i].tombstone)
-                            insert(old[i].key,old[i].value);
+                            insertNoRehash(old[i].key,old[i].value);
                 }
+                void insertNoRehash(const Key& key, const Value& value){
+                    uint64 mask = table.length() - 1;
+                    uint64 index = Core::Hash::hash(hashType, &key, 0) & mask;
+
+                    while(true){
+                        Entry& ent = table[index];
+                        if(!ent.used || ent.tombstone){
+                            ent.key = key;
+                            ent.value = value;
+                            ent.used = true;
+                            ent.tombstone = false;
+                            count++;
+                            return;
+                        }
+                        index = (index + 1) & mask;
+                    }
+                }
+
                 Core::ArrayList<Entry> table{};
                 uint64 count=0;
                 float loadFactor = 0.7f;
                 hashTypes hashType = hashTypes::xxHash;
+                template<typename T>
+                uint64 hashKey(const T& key,hashTypes type){
+                    return Core::Hash::hash(type,key,sizeof(Key));
+                }
+                uint64 hashKey(const String* key,hashTypes type){
+                    return Core::Hash::hash(type,key->buffer(),key->length());
+                }
             public:
                 Map()=default;
                 Map(uint64 initialCapacity){
                     init(initialCapacity);
                 }
                 void init(uint64 initialCapacity){
+                    count=0;
                     uint64 cap = Core::Math::nextPow2(initialCapacity);
                     table.reserve(cap);
                     for(uint64 i=0;i<cap;++i)
@@ -46,7 +73,7 @@ namespace Core{
                     if(static_cast<double>(count) / static_cast<double>(table.length())>loadFactor)
                         rehash();
                     uint64 mask = table.length() -1;
-                    uint64 index = Core::Hash::hash(hashType,&key,0) & mask;
+                    uint64 index = hashKey(key) & mask;
 
                     while(true){
                         Entry& ent = table[index];
@@ -67,7 +94,7 @@ namespace Core{
                 }
                 Value* get(const Key& key){
                     uint64 mask = table.length()-1;
-                    uint64 index = Core::Hash::hash(hashType,&key,0) & mask;
+                    uint64 index = hashKey(key) & mask;
                     while(true){
                         Entry& ent = table[index];
                         if(!ent.used && !ent.tombstone)
@@ -78,12 +105,11 @@ namespace Core{
                     }
                 }
                 bool contains(const Key& key){
-                    Value dummy;
-                    return get(key,dummy);
+                    return get(key);
                 }
                 void remove(const Key& key){
                     uint64 mask = table.length()-1;
-                    uint64 index = Core::Hash::hash(hashType,&key,0) & mask;
+                    uint64 index = hashKey(key) & mask;
                     while(true){
                         Entry& ent = table[index];
                         if(!ent.used && !ent.tombstone)

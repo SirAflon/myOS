@@ -404,6 +404,24 @@ namespace Hash {
                 return 0;
         }
     }
+    inline uint64 hash(hashTypes type,const char* ptr,uint64 len){
+        switch(type){
+            case hashTypes::FNV1a:
+                return FNV1a(ptr,len);
+            case hashTypes::Murmur3:
+                return Murmur3(ptr,len);
+            case hashTypes::xxHash:
+                return xxHash64(ptr,len);
+            case hashTypes::CRC32:
+                return (uint64)CRC32(ptr,len);
+            case hashTypes::CRC64:
+                return CRC64(ptr,len);
+            case hashTypes::SipHash:
+                return SipHash24(ptr,len,0x123456789ABCDEF0ULL, 0x0FEDCBA987654321ULL);
+            default:
+                return 0;
+        }
+    }
     inline uint64 hash(hashTypes type,const void* ptr,uint64 len){
         switch(type){
             case hashTypes::FNV1a:
