@@ -10,7 +10,6 @@ namespace Console {
     char logScroll = 0;
     char historyIndex = -1;
     bool newCommand = true;
-    
     void init(){
         log.init(100);
         history.init(100);
@@ -24,7 +23,6 @@ namespace Console {
         historyIndex = -1;
         logScroll = static_cast<char>(log.length());
         RenderLog();
-
     }
     void KeyBoardOutput(){
         if(!IO::KeyboardHasData())
