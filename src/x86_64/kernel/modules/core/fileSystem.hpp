@@ -3,6 +3,7 @@
 #include "bTree.hpp"
 #include "string.hpp"
 #include "hashmap.hpp"
+#include "utilitys.hpp"
 namespace fileSystem{
     void init();
     void mkdir(const Core::String& rawPath);

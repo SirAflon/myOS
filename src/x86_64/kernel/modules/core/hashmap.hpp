@@ -26,7 +26,7 @@ namespace Core{
                         if(old[i].used && !old[i].tombstone)
                             insert(old[i].key,old[i].value);
                 }
-                Core::ArrayList<Entry> table;
+                Core::ArrayList<Entry> table{};
                 uint64 count=0;
                 float loadFactor = 0.7f;
                 hashTypes hashType = hashTypes::xxHash;

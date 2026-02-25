@@ -102,4 +102,4 @@ run:
 clear:
 	rm -f *.o *.bin *.elf *.img
 clean:
-	rm -f *.o *.elf
+	rm -f *.o 

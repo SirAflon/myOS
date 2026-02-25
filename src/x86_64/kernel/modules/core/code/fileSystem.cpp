@@ -76,22 +76,25 @@ namespace{
         uint32 nameHash;
         uint32 checksum;
     };
-    Core::Trees::bTree<Core::String, FileMeta> fileTree{};
-    Core::Hash::Map<Core::String, Core::Array<Core::String>> dirIndex;
+    Core::Trees::bTree<Core::String, FileMeta>* fileTree;
+    Core::Hash::Map<Core::String, Core::Array<Core::String>>* dirIndex;
 }
 namespace fileSystem{
     void addToIndex(const Core::String& path){
         Core::String parent = getParent(path);
-        Core::Array<Core::String>* arr = dirIndex.get(parent);
+        Core::Array<Core::String>* arr = dirIndex->get(parent);
         if(!arr){
             Core::Array<Core::String> newArr;
             newArr += path;
-            dirIndex.insert(parent,newArr);
+            dirIndex->insert(parent,newArr);
         }else
             *arr += path;
     }
     void init(){
-
+        fileTree = Utilitys::GlobalVariable<Core::Trees::bTree<Core::String, FileMeta>>();
+        dirIndex = Utilitys::GlobalVariable<Core::Hash::Map<Core::String, Core::Array<Core::String>>>();
+        fileTree->init(64);
+        dirIndex->init(128);
     }
     void mkdir(const Core::String& rawPath){
         Core::String path = normalize(rawPath);
@@ -102,7 +105,7 @@ namespace fileSystem{
         meta.dataBlockStart = GetDataBlock();
         meta.dataBlockCount = 1;
         meta.ownerID = 0;
-        fileTree.add(path,meta);
+        fileTree->add(path,meta);
         addToIndex(path);
     }
     void mkFile(const Core::String& rawPath){
@@ -114,18 +117,18 @@ namespace fileSystem{
         meta.dataBlockStart = GetDataBlock();
         meta.dataBlockCount = 1;
         meta.ownerID = 0;
-        fileTree.add(path,meta);
+        fileTree->add(path,meta);
         addToIndex(path);
     }
     Core::Array<Core::String> ls(const Core::String& rawPath){
-        Core::Array<Core::String>* arr = dirIndex.get(normalize(rawPath));
+        Core::Array<Core::String>* arr = dirIndex->get(normalize(rawPath));
         if(!arr)
             return Core::Array<Core::String>(0);
         return Core::Array<Core::String>(*arr);
     }
     Core::Array<Core::String> find(const Core::String& pattern,const Core::String& startRawPath){
         Core::String pat = normalize(pattern);
-        Core::Array<Core::String>* arr = dirIndex.get(normalize(startRawPath));
+        Core::Array<Core::String>* arr = dirIndex->get(normalize(startRawPath));
         if(!arr)
             return Core::Array<Core::String>(0);
         Core::ArrayList<Core::String> result;
@@ -140,7 +143,7 @@ namespace fileSystem{
     void rename(const Core::String& oldRawPath,const Core::String& newRawPath){
         Core::String oldPath = normalize(oldRawPath);
         Core::String newPath = normalize(newRawPath);
-        FileMeta* meta = fileTree.get(oldPath);
+        FileMeta* meta = fileTree->get(oldPath);
         if(!meta)
             return;
     }
@@ -152,14 +155,14 @@ namespace fileSystem{
         (void)rawPath;
     }
     bool exists(const Core::String& rawPath){
-        return fileTree.get(normalize(rawPath));
+        return fileTree->get(normalize(rawPath));
     }
     bool isDir(const Core::String& rawPath){
-        FileMeta* meta = fileTree.get(normalize(rawPath));
+        FileMeta* meta = fileTree->get(normalize(rawPath));
         return (meta)? meta->isDirectory:false;
     }
     bool isFile(const Core::String& rawPath){
-        FileMeta* meta = fileTree.get(normalize(rawPath));
+        FileMeta* meta = fileTree->get(normalize(rawPath));
         return (meta)? !meta->isDirectory:false;
     }
     void saveJournal(){

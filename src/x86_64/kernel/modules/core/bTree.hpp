@@ -17,6 +17,7 @@ namespace Core{
                         keys.reserve(res);
                         childrenID.reserve(res+1);
                     }
+                    void init(){}
                 };
                 Core::ArrayList<node> nodes;
                 mdataType* searchRecursive(uint64 nodeID, const keyType& key) {
@@ -113,9 +114,12 @@ namespace Core{
             
                 mdataType* get(const keyType& key){
                     if(nodes.length() == 0) 
-                        
-                    return nullptr;
+                        return nullptr;
                     return searchRecursive(0, key);
+                }
+
+                void init(uint64 startCap){
+                    nodes.init(startCap);
                 }
 
                 void add(const keyType& newKey,const mdataType& newMetaData){

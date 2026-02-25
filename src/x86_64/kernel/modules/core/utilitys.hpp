@@ -1,5 +1,6 @@
 #pragma once
 #include "dataTypes.hpp"
+#include "allocator.hpp"
 namespace {
     template<typename T>
     constexpr bool isIntType(){return false;};
@@ -103,6 +104,16 @@ namespace {
 
 }
 namespace Utilitys{
+    template<typename T>
+    T* GlobalVariable(){
+        static uint8 storage[sizeof(T)];
+        static bool init=false;
+        if(!init){
+            new (storage) T();
+            init=true;
+        }
+        return reinterpret_cast<T*>(storage);
+    }
     template<typename T>
     constexpr T&& move(T& t)noexcept{
         return static_cast<T&&>(t);

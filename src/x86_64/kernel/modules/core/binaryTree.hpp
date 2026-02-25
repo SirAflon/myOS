@@ -14,14 +14,14 @@ namespace Core{
                 };
                 metaData* recusivSearch(keyType key,uint64 startIndex){
                     node* ptr = nodes[startIndex];
-                    if(ptr.leftID==0&&ptr.rightID==0)
+                    if(ptr->leftID==0&&ptr->rightID==0)
                         return nullptr;
-                    if(key == ptr.key)
-                        return ptr.data;
-                    if(key<nodes[ptr.rightID]){
-                        return recusivSearch(key,ptr.leftID);
+                    if(key == ptr->key)
+                        return ptr->data;
+                    if(key<nodes[ptr->rightID]){
+                        return recusivSearch(key,ptr->leftID);
                     }else{
-                        return recusivSearch(key,ptr.leftID);
+                        return recusivSearch(key,ptr->leftID);
                     }
                 }
                 Core::ArrayList<node> nodes;
