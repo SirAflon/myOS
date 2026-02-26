@@ -14,6 +14,31 @@ void cmdClear(const Core::String& args){
 void cmdEcho(const Core::String& args){
     Console::println(args.buffer());
 }
+void cmdMkdir(const Core::String& args){
+    if(args==""){
+        Console::error("please provide a Path");
+        return;
+    }
+    FileSystem::mkdir(args);
+    Console::println("created Directory");
+}
+void cmdMkfile(const Core::String& args){
+    if(args==""){
+        Console::error("please provide a Path");
+        return;
+    }
+    FileSystem::mkfile(args);
+    Console::println("created File");
+}
+void cmdLS(const Core::String& args){
+    if(args==""){
+        Console::error("please provide a Path");
+        return;
+    }
+    const Core::Array<Core::String> obj = FileSystem::ls(args);
+    for(uint64 i=0;i<obj.length();i++)
+        Console::println(obj[i].buffer());
+}
 Core::Hash::Map<const char*, CommandEntry> commandMap;
 namespace Console {
     Core::Array<Core::String> log;
@@ -34,6 +59,9 @@ namespace Console {
         commandMap.init(32);
         commandMap.insert("clear", CommandEntry{"clear",true,cmdClear,"Clears the log"});
         commandMap.insert("echo", CommandEntry{"echo",true,cmdEcho,"prints back what it gets"});
+        commandMap.insert("ls", CommandEntry{"ls",true,cmdLS,"lists the objects in directory"});
+        commandMap.insert("mkdir", CommandEntry{"mkdir",true,cmdMkdir,"creates new Directory"});
+        commandMap.insert("mkfile", CommandEntry{"mkfile",true,cmdMkfile,"creates new File"});
     }
     void Execute(Core::String& com){
         log += Core::String("<Execute>") + com;
@@ -154,6 +182,10 @@ namespace Console {
     }
     void SetCursor(int x, int y){
         Display::SetCursor(x,y);
+    }
+    void error(const char* ch){
+        print("Error: ");
+        println(ch);
     }
 }
 // BACKSPACE = 0x08

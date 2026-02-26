@@ -4,7 +4,7 @@
 #include "string.hpp"
 #include "hashmap.hpp"
 #include "utilitys.hpp"
-namespace fileSystem{
+namespace FileSystem{
     void init();
     void mkdir(const Core::String& rawPath);
     void mkfile(const Core::String& rawPath);

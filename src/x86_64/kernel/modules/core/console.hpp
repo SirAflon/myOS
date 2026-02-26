@@ -5,6 +5,7 @@
 #include "allocator.hpp"
 #include "comHeader/array+arrayList.hpp"
 #include "hashmap.hpp"
+#include "fileSystem.hpp"
 
 namespace Console {
     void run();
@@ -19,4 +20,5 @@ namespace Console {
     void init();
     template<typename function>
     void registerCommand(const char* key, function func);
+    void error(const char*);
 }
