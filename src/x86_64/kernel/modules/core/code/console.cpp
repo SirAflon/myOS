@@ -1,18 +1,18 @@
 #include "../console.hpp"
 
-typedef void (*commandFunc)(const char* args);
+typedef void (*commandFunc)(const Core::String&);
 typedef struct{
     const char* name;
     bool isNative=false;
     commandFunc func;
     const char* help;
 } CommandEntry;
-void cmdEcho(const char* args){
-    Console::println(args);
-}
-void cmdClear(const char* args){
+void cmdClear(const Core::String& args){
     (void) args;
     Console::ClearLog();
+}
+void cmdEcho(const Core::String& args){
+    Console::println(args.buffer());
 }
 Core::Hash::Map<const char*, CommandEntry> commandMap;
 namespace Console {
@@ -20,30 +20,44 @@ namespace Console {
     Core::Array<Core::String> history;
     Core::String tmpstr;
     Core::String inputBuffer;
-    const char* name = "<Console>";
+    static volatile bool newCommand = true;
     const int nameLength = 9;
     char logScroll = 0;
+    static const char name[] = "<Console>";
     char historyIndex = -1;
-    bool newCommand = true;
     void init(){
         log.init(100);
         history.init(100);
         tmpstr.init();
         inputBuffer.init();
+        newCommand = true;
         commandMap.init(32);
-        commandMap.insert("echo", CommandEntry{"echo",true,cmdEcho,"Prints into the console"});
         commandMap.insert("clear", CommandEntry{"clear",true,cmdClear,"Clears the log"});
+        commandMap.insert("echo", CommandEntry{"echo",true,cmdEcho,"prints back what it gets"});
     }
     void Execute(Core::String& com){
         log += Core::String("<Execute>") + com;
         if(!com.isEmpty())
             history  += com;
+        else{
+            RenderLog();
+            return;
+        }
         historyIndex = -1;
         logScroll = static_cast<char>(log.length());
         com.trim();
-        const char* co = com.cut(0,com.firstIndexOf(' ')).buffer();
+        uint64 firstSpace = com.firstIndexOf(' ');
+        bool hasSpace = firstSpace<com.length();
+        Core::String args = com.cut(firstSpace+1, com.length()-1);
+        if(hasSpace)
+            com.popBack();
+        const char* co = com.buffer();
         CommandEntry* cmd = commandMap.get(co);
-        cmd->func(com.buffer());
+        if(cmd){
+            cmd->func(args);
+            RenderLog();
+            return;
+        }
         RenderLog();
     }
     void KeyBoardOutput(){

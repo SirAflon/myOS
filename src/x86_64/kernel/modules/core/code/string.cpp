@@ -285,14 +285,11 @@ namespace Core {
         return strBuffer[index];
     }
     String String::getAt(uint64 index1,uint64 index2)const{
-        if(index1 >=strLength||index2 >=strLength)
+        if(index1 >= strLength || index2 >= strLength)
             return String("");
         uint64 start = (index1<index2)?index1:index2;
         uint64 end = (index1>index2)?index1:index2;
-        String tmp(end-start+1);
-        for(uint64 i=start;i<=end;++i)
-            tmp += strBuffer[i];
-        return tmp;
+        return String(strBuffer + start,end-start+1);
     }
     bool String::isEmpty()const{
         return strLength==0;
@@ -484,7 +481,7 @@ namespace Core {
         for(uint64 i=0;i<strLength;i++)
             if(strBuffer[i]==ch)
                 return i;
-        return 0;
+        return strLength;
     }
     char* String::begin() {
         return strBuffer;

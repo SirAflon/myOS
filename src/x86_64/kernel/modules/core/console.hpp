@@ -8,7 +8,7 @@
 
 namespace Console {
     void run();
-    void Execute(const char*);
+    void Execute(Core::String&);
     void println(const char*);
     void print(const char*);
     void NewLine();
