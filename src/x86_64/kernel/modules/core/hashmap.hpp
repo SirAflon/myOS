@@ -1,7 +1,10 @@
 #pragma once
 #include "array.hpp"
+#include "console.hpp"
+#include "display.hpp"
 #include "hashTypes.hpp"
 #include "comHeader/array+arrayList.hpp"
+#include "lowLevelAccess.hpp"
 #include "math.hpp"
 #include "string.hpp"
 #include "utilitys.hpp"
@@ -29,7 +32,7 @@ namespace Core{
                 }
                 void insertNoRehash(const Key& key, const Value& value){
                     uint64 mask = table.length() - 1;
-                    uint64 index = Core::Hash::hash(hashType, &key, 0) & mask;
+                    uint64 index = hashKey(key) & mask;
 
                     while(true){
                         Entry& ent = table[index];
@@ -49,12 +52,24 @@ namespace Core{
                 uint64 count=0;
                 float loadFactor = 0.7f;
                 hashTypes hashType = hashTypes::xxHash;
-                template<typename T>
-                uint64 hashKey(const T& key,hashTypes type){
-                    return Core::Hash::hash(type,key,sizeof(Key));
+
+                uint64 hashKey(const char* key){
+                    return Core::Hash::hash(hashType,key,Core::String::CalcLength(key));
                 }
-                uint64 hashKey(const String* key,hashTypes type){
-                    return Core::Hash::hash(type,key->buffer(),key->length());
+                uint64 hashKey(const Core::String& key){
+                    return Core::Hash::hash(hashType,key.buffer(),key.length());
+                }
+                template<typename T>
+                uint64 hashKey(const T& key){
+                    return Core::Hash::hash(hashType,&key,sizeof(T));
+                }
+
+                bool keysEqual(const char* a, const char* b){
+                    return Core::String::compare(a,b) == 0;
+                }
+                template<typename T>
+                bool keysEqual(const T& a, const T& b){
+                    return a==b;
                 }
             public:
                 Map()=default;
@@ -64,9 +79,9 @@ namespace Core{
                 void init(uint64 initialCapacity){
                     count=0;
                     uint64 cap = Core::Math::nextPow2(initialCapacity);
-                    table.reserve(cap);
-                    for(uint64 i=0;i<cap;++i)
-                        table += Entry();
+                    table.init(cap);
+                    for(uint64 i=0;i<cap;i++)
+                        table += Entry{};
                 }
 
                 void insert(const Key& key,const Value& value){
@@ -85,7 +100,7 @@ namespace Core{
                             count++;
                             return;
                         }
-                        if(ent.key == key){
+                        if(ent.used && keysEqual(ent.key, key)){
                             ent.value = value;
                             return;
                         }
@@ -99,7 +114,7 @@ namespace Core{
                         Entry& ent = table[index];
                         if(!ent.used && !ent.tombstone)
                             return nullptr;
-                        if(ent.used && ent.key == key)
+                        if(ent.used && keysEqual(ent.key, key))
                             return &ent.value;
                         index = (index+1) & mask;
                     }
@@ -114,7 +129,7 @@ namespace Core{
                         Entry& ent = table[index];
                         if(!ent.used && !ent.tombstone)
                             return;
-                        if(ent.used && ent.key == key){
+                        if(ent.used && keysEqual(ent.key, key)){
                             ent.used=false;
                             ent.tombstone=true;
                             count--;

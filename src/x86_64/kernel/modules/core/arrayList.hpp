@@ -20,19 +20,15 @@ namespace Core{
                 buffBuffer = (T*)Allocator::Buddy::alloc(sizeof(T)*4);
                 buffCapacity = 4;
                 if constexpr(!Utilitys::Checks::isPrimary<T>())
-                    for(uint64 i=0;i<buffCapacity;i++){
+                    for(uint64 i=0;i<buffCapacity;i++)
                         new (&buffBuffer[i]) T();
-                        buffBuffer[i].init();
-                    }
             }
             void init(uint64 cap){
                 buffBuffer = (T*)Allocator::Buddy::alloc(sizeof(T)*cap);
                 buffCapacity = cap;
                 if constexpr(!Utilitys::Checks::isPrimary<T>()){
-                    for(uint64 i=0;i<buffCapacity;i++){
+                    for(uint64 i=0;i<buffCapacity;i++)
                         new (&buffBuffer[i]) T();
-                        buffBuffer[i].init();
-                    }
                 }
             }
             void init(const Core::Array<T>& copy){

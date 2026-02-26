@@ -93,5 +93,6 @@ namespace Core {
 
 
             static uint64 CalcLength(const char*);
+            static int compare(const char*,const char*);
     };
 }

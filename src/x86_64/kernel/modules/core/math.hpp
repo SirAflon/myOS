@@ -16,6 +16,9 @@ namespace Core{
             value |= value >>16;
             if constexpr (sizeof(T) >=8)
                 value |= value >>32;
+            if constexpr (sizeof(T) >=32)
+                value |= value >>64;
+            
             value++;
             return value;
         }

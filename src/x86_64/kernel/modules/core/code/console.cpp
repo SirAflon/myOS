@@ -14,7 +14,7 @@ void cmdClear(const char* args){
     (void) args;
     Console::ClearLog();
 }
-Core::Hash::Map<const char*, CommandEntry>* commandMap;
+Core::Hash::Map<const char*, CommandEntry> commandMap;
 namespace Console {
     Core::Array<Core::String> log;
     Core::Array<Core::String> history;
@@ -30,11 +30,9 @@ namespace Console {
         history.init(100);
         tmpstr.init();
         inputBuffer.init();
-        commandMap = Utilitys::GlobalVariable<Core::Hash::Map<const char*, CommandEntry>>();
-        commandMap->init(64);
-        commandMap->insert("echo", CommandEntry{"echo",true,cmdEcho,"Prints into the console"});
-                                LowLevelAccess::Hlt();
-        commandMap->insert("clear", CommandEntry{"clear",true,cmdClear,"Clears the log"});
+        commandMap.init(32);
+        commandMap.insert("echo", CommandEntry{"echo",true,cmdEcho,"Prints into the console"});
+        commandMap.insert("clear", CommandEntry{"clear",true,cmdClear,"Clears the log"});
     }
     void Execute(Core::String& com){
         log += Core::String("<Execute>") + com;
@@ -44,7 +42,7 @@ namespace Console {
         logScroll = static_cast<char>(log.length());
         com.trim();
         const char* co = com.cut(0,com.firstIndexOf(' ')).buffer();
-        CommandEntry* cmd = commandMap->get(co);
+        CommandEntry* cmd = commandMap.get(co);
         cmd->func(com.buffer());
         RenderLog();
     }
