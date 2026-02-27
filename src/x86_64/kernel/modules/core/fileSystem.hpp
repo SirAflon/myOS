@@ -8,8 +8,6 @@ namespace FileSystem{
     void init();
     void mkdir(const Core::String& rawPath);
     void mkfile(const Core::String& rawPath);
-    void mkdir(const Core::String& path,uint32 owner);
-    void mkfile(const Core::String& path,uint32 owner);
     Core::Array<Core::String> ls(const Core::String& rawPath);
     Core::Array<Core::String> find(const Core::String& pattern,const Core::String& startRawPath);
     void rename(const Core::String& oldRawPath,const Core::String& newRawPath);

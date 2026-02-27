@@ -66,14 +66,14 @@ namespace Console {
     }
     void Execute(Core::String& com){
         log += Core::String("<Execute>") + com;
+        historyIndex = -1;
+        logScroll = static_cast<char>(log.length());
         if(!com.isEmpty())
             history  += com;
         else{
             RenderLog();
             return;
         }
-        historyIndex = -1;
-        logScroll = static_cast<char>(log.length());
         com.trim();
         uint64 firstSpace = com.firstIndexOf(' ');
         bool hasSpace = firstSpace<com.length();

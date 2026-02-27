@@ -54,19 +54,19 @@ namespace{
         uint64 id;
         uint64 parentID;
 
-        bool isDirectory;
+        bool isDirectory = false;
 
-        uint64 size;
-        uint64 created;
-        uint64 modified;
+        uint64 size = 0;
+        uint64 created = 0;
+        uint64 modified = 0;
 
-        uint32 ownerID;
-        uint32 group;
-        uint16 permissions;
-        uint32 flags;
+        uint32 ownerID = 0;
+        uint32 group = 0;
+        uint16 permissions = 0;
+        uint32 flags = 0;
 
-        uint64 dataBlockStart;
-        uint64 dataBlockCount;
+        uint64 blockStart = 0;
+        uint64 blockCount;
 
         //SearchHelpers
         Core::String lastComponent;
@@ -96,16 +96,15 @@ namespace FileSystem{
         dirIndex.init(128);
     }
     void mkdir(const Core::String& rawPath){
-        Core::String path = normalize(rawPath);
+        Core::String path{normalize(rawPath)};
         FileMeta meta;
         meta.id = GetID();
         meta.isDirectory = true;
         meta.size = 0;
-        meta.dataBlockStart = GetDataBlock();
-        meta.dataBlockCount = 1;
-        meta.ownerID = 0;
-        fileTree.add(path,meta);
-        addToIndex(path);
+        meta.blockCount=0;
+        meta.blockStart = GetDataBlock();
+        //fileTree.add(path,meta);
+        //addToIndex(path);
     }
     void mkfile(const Core::String& rawPath){
         Core::String path = normalize(rawPath);
@@ -113,8 +112,8 @@ namespace FileSystem{
         meta.id = GetID();
         meta.isDirectory = false;
         meta.size = 0;
-        meta.dataBlockStart = GetDataBlock();
-        meta.dataBlockCount = 1;
+        meta.blockCount = 0;
+        meta.blockStart = GetDataBlock();
         meta.ownerID = 0;
         fileTree.add(path,meta);
         addToIndex(path);
