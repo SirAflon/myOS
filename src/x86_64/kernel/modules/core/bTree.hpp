@@ -6,9 +6,9 @@ namespace Core{
         struct bTree{
             private:
                 struct node{
-                    Core::ArrayList<mdataType> mdata;
-                    Core::ArrayList<keyType> keys;
-                    Core::ArrayList<uint64> childrenID;
+                    Core::ArrayList<mdataType> mdata{0};
+                    Core::ArrayList<keyType> keys{0};
+                    Core::ArrayList<uint64> childrenID{0};
                     bool isLeaf = false;
 
                     node() = default;
@@ -16,11 +16,6 @@ namespace Core{
                         mdata.reserve(res);
                         keys.reserve(res);
                         childrenID.reserve(res+1);
-                    }
-                    void init(){
-                        mdata.init();
-                        keys.init();
-                        childrenID.init();
                     }
                 };
                 Core::ArrayList<node> nodes;

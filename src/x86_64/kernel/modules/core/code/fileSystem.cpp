@@ -91,27 +91,28 @@ namespace FileSystem{
         }else
             *arr += path;
     }
+    void add(const Core::String& path, const FileMeta file){
+        fileTree.add(path,file);
+        addToIndex(path);
+    }
     void init(){
         fileTree.init(64);
         dirIndex.init(128);
     }
     void mkdir(const Core::String& rawPath){
-        LowLevelAccess::Hlt();
         Core::String path{normalize(rawPath)};
         FileMeta meta;
         meta.id = GetID();
         meta.isDirectory = true;
         meta.blockStart = GetDataBlock();
-        //fileTree.add(path,meta);
-        //addToIndex(path);
+        add(path,meta);
     }
     void mkfile(const Core::String& rawPath){
         Core::String path = normalize(rawPath);
         FileMeta meta;
         meta.id = GetID();
         meta.blockStart = GetDataBlock();
-        fileTree.add(path,meta);
-        addToIndex(path);
+        add(path,meta);
     }
     Core::Array<Core::String> ls(const Core::String& rawPath){
         Core::Array<Core::String>* arr = dirIndex.get(normalize(rawPath));

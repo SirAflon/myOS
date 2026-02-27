@@ -26,6 +26,7 @@ void initAllocator(){
 
 extern "C" void KernelStart(){
     //Sector in boot at line 57 as the kernel gets bigger (longmode.bin(size in bytes)+511)/512
+    LowLevelAccess::Hlt();
     Console::ClearScreen();
     initAllocator();
     FileSystem::init();

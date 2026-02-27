@@ -54,7 +54,7 @@ disk_read:
 dap_longmode:
     db 0x10
     db 0
-    dw 110           ; sector count (big enough for longMode.bin)
+    dw 150           ; sector count (big enough for longMode.bin)
     dw 0x0000       ; offset
     dw 0x8000       ; segment (0x8000:0 = 0x80000)
     dq 1            ; LBA 1 (boot.bin is LBA 0, longMode.bin starts at LBA 1)
