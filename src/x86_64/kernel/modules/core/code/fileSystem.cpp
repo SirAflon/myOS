@@ -107,7 +107,7 @@ namespace FileSystem{
         fileTree.add(path,meta);
         addToIndex(path);
     }
-    void mkFile(const Core::String& rawPath){
+    void mkfile(const Core::String& rawPath){
         Core::String path = normalize(rawPath);
         FileMeta meta;
         meta.id = GetID();

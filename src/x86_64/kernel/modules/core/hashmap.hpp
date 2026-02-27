@@ -1,7 +1,4 @@
 #pragma once
-#include "array.hpp"
-#include "console.hpp"
-#include "display.hpp"
 #include "hashTypes.hpp"
 #include "comHeader/array+arrayList.hpp"
 #include "lowLevelAccess.hpp"
@@ -153,6 +150,12 @@ namespace Core{
                 }
                 const hashTypes& GetUsedHashType(){
                     return hashType;
+                }
+                float GetLoadFactor(){
+                    return loadFactor;
+                }
+                void SetLoadFactor(float newLoadFactor){
+                    loadFactor = newLoadFactor;
                 }
         };
     }

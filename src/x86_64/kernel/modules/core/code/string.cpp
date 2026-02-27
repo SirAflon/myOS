@@ -188,7 +188,8 @@ namespace Core {
         return strBuffer[index];
     }
     bool String::operator==(const String& s)const{
-        if(strLength != s.strLength) return false;
+        if(strLength != s.strLength) 
+            return false;
         for(uint64 i=0;i<strLength;++i)
             if(strBuffer[i]!=s.strBuffer[i])
                 return false;

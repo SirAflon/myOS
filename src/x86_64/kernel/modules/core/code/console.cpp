@@ -15,7 +15,7 @@ void cmdEcho(const Core::String& args){
     Console::println(args.buffer());
 }
 void cmdMkdir(const Core::String& args){
-    if(args==""){
+    if(args.isEmpty()){
         Console::error("please provide a Path");
         return;
     }
@@ -23,7 +23,7 @@ void cmdMkdir(const Core::String& args){
     Console::println("created Directory");
 }
 void cmdMkfile(const Core::String& args){
-    if(args==""){
+    if(args.isEmpty()){
         Console::error("please provide a Path");
         return;
     }
@@ -31,7 +31,7 @@ void cmdMkfile(const Core::String& args){
     Console::println("created File");
 }
 void cmdLS(const Core::String& args){
-    if(args==""){
+    if(args.isEmpty()){
         Console::error("please provide a Path");
         return;
     }
@@ -58,6 +58,7 @@ namespace Console {
         newCommand = true;
         commandMap.init(32);
         commandMap.insert("clear", CommandEntry{"clear",true,cmdClear,"Clears the log"});
+        commandMap.insert("cls", CommandEntry{"cls",true,cmdClear,"Clears the log"});
         commandMap.insert("echo", CommandEntry{"echo",true,cmdEcho,"prints back what it gets"});
         commandMap.insert("ls", CommandEntry{"ls",true,cmdLS,"lists the objects in directory"});
         commandMap.insert("mkdir", CommandEntry{"mkdir",true,cmdMkdir,"creates new Directory"});
