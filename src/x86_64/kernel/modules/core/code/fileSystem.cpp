@@ -1,6 +1,6 @@
 #include "../fileSystem.hpp"
 #include <cstdlib>
-
+#include "../display.hpp"
 
 namespace{
     uint64 ids =0;
@@ -66,7 +66,7 @@ namespace{
         uint32 flags = 0;
 
         uint64 blockStart = 0;
-        uint64 blockCount;
+        volatile uint64 blockCount = 0;
 
         //SearchHelpers
         Core::String lastComponent;
@@ -96,12 +96,11 @@ namespace FileSystem{
         dirIndex.init(128);
     }
     void mkdir(const Core::String& rawPath){
+        LowLevelAccess::Hlt();
         Core::String path{normalize(rawPath)};
         FileMeta meta;
         meta.id = GetID();
         meta.isDirectory = true;
-        meta.size = 0;
-        meta.blockCount=0;
         meta.blockStart = GetDataBlock();
         //fileTree.add(path,meta);
         //addToIndex(path);
@@ -110,11 +109,7 @@ namespace FileSystem{
         Core::String path = normalize(rawPath);
         FileMeta meta;
         meta.id = GetID();
-        meta.isDirectory = false;
-        meta.size = 0;
-        meta.blockCount = 0;
         meta.blockStart = GetDataBlock();
-        meta.ownerID = 0;
         fileTree.add(path,meta);
         addToIndex(path);
     }
