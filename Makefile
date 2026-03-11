@@ -16,17 +16,6 @@ CXXFLAGS = \
 
 all: myos.img
 
-# -------------------------
-# Bootloader (Stage 1)
-# -------------------------
-boot.o: src/x86_16/bootloader/boot.asm
-	$(AS32) src/x86_16/bootloader/boot.asm -o boot.o
-
-boot.elf: boot.o linker/boot.ld
-	$(LD32) -T linker/boot.ld -o boot.elf boot.o
-
-boot.bin: boot.elf
-	objcopy -O binary boot.elf boot.bin
 
 
 # -------------------------
@@ -71,12 +60,27 @@ longMode.bin: longMode.elf
 	objcopy -O binary longMode.elf longMode.bin
 
 #(filesize(bytes)+511)/512 = sectors
+LONGMODE_SIZE := $(shell stat -c%s longMode.bin)
+LONGMODE_SECTORS := $(shell echo $$(( ($(LONGMODE_SIZE) + 511) / 512 )))
+
+
+# -------------------------
+# Bootloader (Stage 1)
+# -------------------------
+boot.o: src/x86_16/bootloader/boot.asm
+	$(AS32) src/x86_16/bootloader/boot.asm -DLONGMODE_SECTORS=${LONGMODE_SECTORS} -o boot.o
+
+boot.elf: boot.o linker/boot.ld
+	$(LD32) -T linker/boot.ld -o boot.elf boot.o
+
+boot.bin: boot.elf
+	objcopy -O binary boot.elf boot.bin
+
 
 # -------------------------
 # Disk image layout
 # -------------------------
 myos.img: boot.bin longMode.bin
-	cat boot.bin longMode.bin > myos.img
 	dd if=/dev/zero of=myos.img bs=1M count=4
 	dd if=boot.bin     of=myos.img conv=notrunc
 	dd if=longMode.bin of=myos.img seek=1 conv=notrunc
