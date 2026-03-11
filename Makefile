@@ -16,76 +16,89 @@ CXXFLAGS = \
 
 all: myos.img
 
-
+build:
+	mkdir -p build
 
 # -------------------------
 # longMode + Kernel (Stage 2)
 # -------------------------
-longMode.o: src/x86_16/bootloader/longmode.asm
-	$(AS64) src/x86_16/bootloader/longmode.asm -o longMode.o
-
-kernel.o: src/x86_64/kernel/main.cpp
-	$(CC) $(CXXFLAGS) -c src/x86_64/kernel/main.cpp -o kernel.o
-
-display.o: src/x86_64/kernel/modules/core/code/display.cpp
-	$(CC) $(CXXFLAGS) -c src/x86_64/kernel/modules/core/code/display.cpp -o display.o
-
-lowlevelaccess.o: src/x86_64/kernel/modules/core/code/lowLevelAccess.cpp
-	$(CC) $(CXXFLAGS) -c src/x86_64/kernel/modules/core/code/lowLevelAccess.cpp -o lowlevelaccess.o
-
-io.o: src/x86_64/kernel/modules/core/code/io.cpp
-	$(CC) $(CXXFLAGS) -c src/x86_64/kernel/modules/core/code/io.cpp -o io.o
-
-console.o: src/x86_64/kernel/modules/core/code/console.cpp
-	$(CC) $(CXXFLAGS) -c src/x86_64/kernel/modules/core/code/console.cpp -o console.o
-
-string.o: src/x86_64/kernel/modules/core/code/string.cpp
-	$(CC) $(CXXFLAGS) -c src/x86_64/kernel/modules/core/code/string.cpp -o string.o
-
-allocator.o: src/x86_64/kernel/modules/core/code/allocator.cpp
-	$(CC) $(CXXFLAGS) -c src/x86_64/kernel/modules/core/code/allocator.cpp -o allocator.o
-
-filesystem.o: src/x86_64/kernel/modules/core/code/fileSystem.cpp
-	$(CC) $(CXXFLAGS) -c src/x86_64/kernel/modules/core/code/fileSystem.cpp -o filesystem.o
-
-math.o: src/x86_64/kernel/modules/core/code/math.cpp
-	$(CC) $(CXXFLAGS) -c src/x86_64/kernel/modules/core/code/math.cpp -o math.o
+build/longMode.o: src/x86_16/bootloader/longmode.asm | build
+	$(AS64) src/x86_16/bootloader/longmode.asm -o build/longMode.o
 
 
-longMode.elf: longMode.o kernel.o display.o lowlevelaccess.o io.o console.o string.o allocator.o filesystem.o math.o linker/longMode.ld
-	$(LD64) -T linker/longMode.ld -o longMode.elf \
-		longMode.o kernel.o display.o lowlevelaccess.o allocator.o io.o console.o string.o filesystem.o math.o
+build/kernel.o: src/x86_64/kernel/main.cpp | build
+	$(CC) $(CXXFLAGS) -c src/x86_64/kernel/main.cpp -o build/kernel.o
 
-longMode.bin: longMode.elf
-	objcopy -O binary longMode.elf longMode.bin
+
+build/display.o: src/x86_64/kernel/modules/core/code/display.cpp | build
+	$(CC) $(CXXFLAGS) -c src/x86_64/kernel/modules/core/code/display.cpp -o build/display.o
+
+
+build/lowlevelaccess.o: src/x86_64/kernel/modules/core/code/lowLevelAccess.cpp | build
+	$(CC) $(CXXFLAGS) -c src/x86_64/kernel/modules/core/code/lowLevelAccess.cpp -o build/lowlevelaccess.o
+
+
+build/io.o: src/x86_64/kernel/modules/core/code/io.cpp | build
+	$(CC) $(CXXFLAGS) -c src/x86_64/kernel/modules/core/code/io.cpp -o build/io.o
+
+
+build/console.o: src/x86_64/kernel/modules/core/code/console.cpp | build
+	$(CC) $(CXXFLAGS) -c src/x86_64/kernel/modules/core/code/console.cpp -o build/console.o
+
+
+build/string.o: src/x86_64/kernel/modules/core/code/string.cpp | build
+	$(CC) $(CXXFLAGS) -c src/x86_64/kernel/modules/core/code/string.cpp -o build/string.o
+
+
+build/allocator.o: src/x86_64/kernel/modules/core/code/allocator.cpp | build
+	$(CC) $(CXXFLAGS) -c src/x86_64/kernel/modules/core/code/allocator.cpp -o build/allocator.o
+
+
+build/filesystem.o: src/x86_64/kernel/modules/core/code/fileSystem.cpp | build
+	$(CC) $(CXXFLAGS) -c src/x86_64/kernel/modules/core/code/fileSystem.cpp -o build/filesystem.o
+
+
+build/math.o: src/x86_64/kernel/modules/core/code/math.cpp | build
+	$(CC) $(CXXFLAGS) -c src/x86_64/kernel/modules/core/code/math.cpp -o build/math.o
+
+
+
+build/longMode.elf: build/longMode.o build/kernel.o build/display.o build/lowlevelaccess.o build/io.o build/console.o build/string.o build/allocator.o build/filesystem.o build/math.o linker/longMode.ld | build
+	$(LD64) -T linker/longMode.ld -o build/longMode.elf \
+		build/longMode.o build/kernel.o build/display.o build/lowlevelaccess.o build/allocator.o build/io.o build/console.o build/string.o build/filesystem.o build/math.o
+
+
+build/longMode.bin: build/longMode.elf | build
+	objcopy -O binary build/longMode.elf build/longMode.bin
 
 #(filesize(bytes)+511)/512 = sectors
-LONGMODE_SIZE := $(shell stat -c%s longMode.bin)
-LONGMODE_SECTORS := $(shell echo $$(( ($(LONGMODE_SIZE) + 511) / 512 )))
+LONGMODE_SIZE = $(shell stat -c%s build/longMode.bin)
+LONGMODE_SECTORS = $(shell echo $$(( ($(LONGMODE_SIZE) + 511) / 512 )))
 
 
 # -------------------------
 # Bootloader (Stage 1)
 # -------------------------
-boot.o: src/x86_16/bootloader/boot.asm
-	$(AS32) src/x86_16/bootloader/boot.asm -DLONGMODE_SECTORS=${LONGMODE_SECTORS} -o boot.o
 
-boot.elf: boot.o linker/boot.ld
-	$(LD32) -T linker/boot.ld -o boot.elf boot.o
+build/boot.o: src/x86_16/bootloader/boot.asm build/longMode.bin | build
+	$(AS32) src/x86_16/bootloader/boot.asm -DLONGMODE_SECTORS=${LONGMODE_SECTORS} -o build/boot.o
 
-boot.bin: boot.elf
-	objcopy -O binary boot.elf boot.bin
+
+build/boot.elf: build/boot.o linker/boot.ld | build
+	$(LD32) -T linker/boot.ld -o build/boot.elf build/boot.o
+
+
+build/boot.bin: build/boot.elf | build
+	objcopy -O binary build/boot.elf build/boot.bin
 
 
 # -------------------------
 # Disk image layout
 # -------------------------
-myos.img: boot.bin longMode.bin
+myos.img: build/boot.bin build/longMode.bin
 	dd if=/dev/zero of=myos.img bs=1M count=4
-	dd if=boot.bin     of=myos.img conv=notrunc
-	dd if=longMode.bin of=myos.img seek=1 conv=notrunc
-
-	make clean
+	dd if=build/boot.bin     of=myos.img conv=notrunc
+	dd if=build/longMode.bin of=myos.img seek=1 conv=notrunc
 
 
 # -------------------------
@@ -104,6 +117,4 @@ run:
 # Cleanup
 # -------------------------
 clear:
-	rm -f *.o *.bin *.elf *.img
-clean:
-	rm -f *.o 
+	rm -rf build *.img
