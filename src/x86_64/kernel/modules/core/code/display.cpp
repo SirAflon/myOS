@@ -113,4 +113,16 @@ namespace Display{
     char GetCharacterInLines(){
         return charcterInLines;
     }
+    void panic(const char* msg){
+        ClearScreen();
+        SetCursor(0,0);
+        print(msg);
+        LowLevelAccess::Hlt();
+    }
+    void panic(const Core::String* msg){
+        ClearScreen();
+        SetCursor(0,0);
+        print(msg);
+        LowLevelAccess::Hlt();
+    }
 }

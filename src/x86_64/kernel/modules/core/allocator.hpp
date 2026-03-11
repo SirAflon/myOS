@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <cstddef>
+#include "display.hpp"
 #include "dataTypes.hpp"
 
 namespace Allocator {

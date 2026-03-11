@@ -21,4 +21,6 @@ namespace Display{
     void printlnHex(uint64 n);
     char GetHeightInLines();
     char GetCharacterInLines();
+    void panic(const char*);
+    void panic(const Core::String*);
 }

@@ -2,7 +2,8 @@
 #include <cstdlib>
 #include "../display.hpp"
 
-namespace{
+
+namespace FileSystem{
     uint64 ids =0;
     uint64 GetID(){
         ids++;
@@ -79,8 +80,6 @@ namespace{
     };
     Core::Trees::bTree<Core::String, FileMeta> fileTree;
     Core::Hash::Map<Core::String, Core::Array<Core::String>> dirIndex;
-}
-namespace FileSystem{
     void addToIndex(const Core::String& path){
         Core::String parent = getParent(path);
         Core::Array<Core::String>* arr = dirIndex.get(parent);
@@ -92,8 +91,8 @@ namespace FileSystem{
             *arr += path;
     }
     void add(const Core::String& path, const FileMeta file){
-        fileTree.add(path,file);
-        addToIndex(path);
+        //fileTree.add(path,file);
+        //addToIndex(path);
     }
     void init(){
         fileTree.init(64);
@@ -105,6 +104,8 @@ namespace FileSystem{
         meta.id = GetID();
         meta.isDirectory = true;
         meta.blockStart = GetDataBlock();
+        meta.components.init(1);
+        meta.chainKeys.init(1);
         add(path,meta);
     }
     void mkfile(const Core::String& rawPath){
@@ -112,7 +113,7 @@ namespace FileSystem{
         FileMeta meta;
         meta.id = GetID();
         meta.blockStart = GetDataBlock();
-        add(path,meta);
+       // add(path,meta);
     }
     Core::Array<Core::String> ls(const Core::String& rawPath){
         Core::Array<Core::String>* arr = dirIndex.get(normalize(rawPath));
