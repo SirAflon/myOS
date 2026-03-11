@@ -19,17 +19,11 @@ namespace Core{
             void init(){
                 buffBuffer = (T*)Allocator::Buddy::alloc(sizeof(T)*4);
                 buffCapacity = 4;
-                if constexpr(!Utilitys::Checks::isPrimary<T>())
-                    for(uint64 i=0;i<buffCapacity;i++)
-                        new (&buffBuffer[i]) T();
             }
             void init(uint64 cap){
                 buffBuffer = (T*)Allocator::Buddy::alloc(sizeof(T)*cap);
                 buffCapacity = cap;
-                if constexpr(!Utilitys::Checks::isPrimary<T>()){
-                    for(uint64 i=0;i<buffCapacity;i++)
-                        new (&buffBuffer[i]) T();
-                }
+                hardCap = true;
             }
             void init(const Core::Array<T>& copy){
                 buffLength = copy.length;
@@ -43,7 +37,7 @@ namespace Core{
                 buffCapacity = move.buffLength;
                 buffBuffer=(T*)Allocator::Buddy::alloc(sizeof(T)*buffCapacity);
                 for(uint64 i=0;i<buffLength;++i)
-                    new (&buffBuffer[i]) T(Utilitys::move(move.buffBuffer));
+                    new (&buffBuffer[i]) T(Utilitys::move(move.buffBuffer[i]));
                 move.clear();
             }
             explicit ArrayList(const Core::Array<T>& copy)
@@ -168,6 +162,10 @@ namespace Core{
                 return *this;
             }
             ArrayList<T>& operator+=(const ArrayList<T>& value){
+                if(this == &value){
+                    ArrayList<T> copy(value);
+                    return *this += copy;
+                }
                 uint64 needed = buffLength + value.buffLength;
 
                 if(hardCap && needed > buffCapacity)
@@ -346,19 +344,6 @@ namespace Core{
                 }
                 buffLength -= count;
             }
-            void deleteAt(uint64 index){
-                if(index>=buffLength)
-                    return;
-                buffBuffer[index].~T();
-            }
-            void deleteAt(uint64 index1,uint64 index2){
-                if (index1 >= buffLength || index2 >= buffLength)
-                    return;
-                uint64 start = (index1 < index2) ? index1 : index2;
-                uint64 end = (index1 > index2) ? index1 : index2;
-                for(uint64 i=start;i <= end;++i)
-                    buffBuffer[i].~T();
-            }
             Optional<ArrayList<T>> cut(uint64 index1, uint64 index2) {
                 ArrayList tmp = at(index1, index2);
                 erase(index1, index2);
@@ -390,6 +375,8 @@ namespace Core{
                 return out;
             }
             void put(const ArrayList& arr, uint64 index) {
+                if(this == &arr)
+                    return;
                 uint64 len = arr.length();
                 if (index > buffLength)
                     index = buffLength;
@@ -407,7 +394,7 @@ namespace Core{
                 buffLength = newLen;
             }
             void put(const T& tmp,uint64 index){
-                if(buffLength ==0 || index > buffLength)
+                if(buffLength ==0 || index >= buffLength)
                     return;
                 buffBuffer[index] = tmp;
             }
@@ -427,33 +414,35 @@ namespace Core{
             Core::Array<T> toArray(){
                 return Core::Array<T>(Utilitys::move(*this));
             }
-            bool includes(T* includedData){
+            bool includes(T& includedData){
                 for(uint64 i=0;i<buffLength;i++)
-                    if(buffBuffer[i]==includedData)
+                    if(buffBuffer[i]== includedData)
                         return true;
                 return false;
             }
             void shrinkTo(uint64 index){
+                if(buffLength==0) 
+                    return;
                 erase(index,buffLength-1);
             }
-            uint64 Count(const T* in){
+            uint64 Count(const T& in){
                 uint64 out=0;
                 for(uint64 i=0;i<buffLength;i++)
                     if(buffBuffer[i] == in)
                         out++;
                 return out;
             }
-            char* begin() {
+            T* begin() {
                 return buffBuffer;
              }
-            char* Send()   {
+            T* Send()   {
                 return buffBuffer + buffLength;
             }
 
-            const char* begin() const {
+            const T* begin() const {
                 return buffBuffer;
             }
-            const char* end()   const { 
+            const T* end()   const { 
                 return buffBuffer + buffLength; 
             }
             //static

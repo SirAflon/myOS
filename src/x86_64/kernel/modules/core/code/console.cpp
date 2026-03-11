@@ -48,7 +48,7 @@ namespace Console {
     static volatile bool newCommand = true;
     const int nameLength = 9;
     char logScroll = 0;
-    static const char name[] = "<Console>";
+    static const char* name = "<Console>";
     char historyIndex = -1;
     void init(){
         log.init(100);
@@ -63,6 +63,9 @@ namespace Console {
         commandMap.insert("ls", CommandEntry{"ls",true,cmdLS,"lists the objects in directory"});
         commandMap.insert("mkdir", CommandEntry{"mkdir",true,cmdMkdir,"creates new Directory"});
         commandMap.insert("mkfile", CommandEntry{"mkfile",true,cmdMkfile,"creates new File"});
+    }
+    void döner(){
+        println("döner");
     }
     void Execute(Core::String& com){
         log += Core::String("<Execute>") + com;

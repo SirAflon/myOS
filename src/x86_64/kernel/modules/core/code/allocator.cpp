@@ -1,5 +1,7 @@
 #include "../allocator.hpp"
-
+#define ALIGNUP(x,a) (((x)+(a)-1)&((a)-1))
+#define ALLOCALIGN 8
+#define MINFREEBLOCK (sizeof(struct freeBlock)+ALLOCALIGN)
 namespace Allocator {
     namespace Bitmap {
         static uint8* bitmap = nullptr;
@@ -188,6 +190,81 @@ namespace Allocator {
         void free(Cache& c, void* ptr) {
             *(void**)ptr = c.freeList;
             c.freeList = ptr;
+        }
+    }
+    namespace FreeList{
+        namespace AddressSorted{
+            struct freeBlock{
+                uint64 size;
+                struct freeBlock *next;
+            };
+            struct allocHeader{
+                uint64 size;
+                uint32 magic;
+            };
+            static_assert(sizeof(struct allocHeader)%ALLOCALIGN ==0,"allocHeader size must be multiple of alignment");
+            static struct freeBlock* freeList=NULL;
+            static uintptr heapStart, heapEnd;
+            void init(uintptr start, uint64 size){
+                heapStart = start;
+                heapEnd = start + size;
+                freeList = (struct freeBlock*) start;
+                freeList->size = size;
+                freeList->next=NULL;
+            }
+            void *malloc(uint64 size){
+                if(size == 0)
+                    return NULL;
+                size = ALIGNUP(size,ALLOCALIGN);
+                uint64 totalNeeded = sizeof(struct allocHeader)+size;
+                struct freeBlock **prev = &freeList;
+                struct freeBlock *curr = freeList;    
+                while(curr){
+                    if(curr->size >= totalNeeded){
+                        uint64 remainder = curr->size - totalNeeded;
+                        if(remainder >= MINFREEBLOCK){
+                            struct freeBlock* newFree = (struct freeBlock*)((char*)curr + totalNeeded);
+                            newFree->size = remainder;
+                            newFree->next = curr->next;
+                            *prev = newFree;
+                        }else
+                            *prev = curr->next;
+                        struct allocHeader *hdr = (struct allocHeader*)curr;
+                        hdr->size = size;
+                        hdr->magic= 0xDEADBEEF;
+                        return (void*)((char*)hdr + sizeof(struct allocHeader));
+                    }
+                    prev = &curr->next;
+                    curr = curr->next;
+                } 
+                return NULL;     
+            }
+            void free(void* ptr){
+                if(!ptr)
+                    return;
+                struct allocHeader *hdr = (struct allocHeader*)((char*)ptr - sizeof(struct allocHeader));
+                if(hdr->magic != 0xDEADBEEF)
+                    return;
+                hdr->magic = 0;
+                struct freeBlock *blk = (struct freeBlock*)hdr;
+                blk->size = sizeof(struct allocHeader)+hdr->size;
+                struct freeBlock **prev = &freeList;
+                struct freeBlock* curr = freeList;
+                while(curr && curr <blk){
+                    prev = &curr->next;
+                    curr = curr->next;
+                }
+                if(curr&&(char*)blk + blk->size == (char*)curr){
+                    blk->size += curr->size;
+                    blk->next = curr->next;
+                }else
+                    blk->next=curr;
+                if(*prev && (char*)(*prev)+(*prev)->size == (char*)blk){
+                    (*prev)->size += blk->size;
+                    (*prev)->next = blk->next;
+                }else
+                    *prev = blk;
+            }
         }
     }
 }

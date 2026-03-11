@@ -16,8 +16,11 @@ namespace Core{
             buffCapacity(0){}
 
             void init(uint64 cap){
-                if(buffCapacity>0)
-                    return;
+                if(buffBuffer){
+                    for(uint64 i=0;i<buffLength;++i)
+                        buffBuffer[i].~T();
+                    Allocator::Buddy::free(buffBuffer);
+                }
                 buffBuffer = (T*)Allocator::Buddy::alloc(sizeof(T)*cap);
                 buffCapacity = cap;
                 buffLength = 0;
@@ -116,6 +119,10 @@ namespace Core{
             }
 
             Array<T>& operator+=(const Array<T>& value){
+                if(this == &value){
+                    Array<T> copy(value);
+                    return *this += copy;
+                }
                 uint64 needed = buffLength + value.buffLength;
                 if(needed>buffCapacity)
                     needed=buffCapacity;
@@ -250,19 +257,6 @@ namespace Core{
                 }
                 buffLength -= count;
             }
-            void deleteAt(uint64 index){
-                if(index >= buffLength)
-                    return;
-                buffBuffer[index].~T();
-            }
-            void deleteAt(uint64 index1, uint64 index2){
-                if (index1 >= buffLength || index2 >= buffLength)
-                    return;
-                uint64 start = (index1 < index2) ? index1 : index2;
-                uint64 end = (index1 > index2) ? index1 : index2;
-                for(uint64 i=start;i <= end;++i)
-                    buffBuffer[i].~T();
-            }
             Array cut(uint64 index1, uint64 index2) {
                 Optional<Array> opt = at(index1, index2);
                 if(!opt)
@@ -301,6 +295,11 @@ namespace Core{
                 return out;
             }
             void put(const Array& arr, uint64 index) {
+                if(this == &arr){
+                    Array copy(arr);
+                    put(copy,index);
+                    return;
+                }
                 uint64 len = arr.length();
                 if (index > buffLength)
                     index = buffLength;
@@ -308,6 +307,8 @@ namespace Core{
                 uint64 maxInsert = buffCapacity - buffLength;
                 if (len > maxInsert)
                     len = maxInsert;
+                if(len == 0)
+                    return;
                 uint64 newLen = buffLength + len;
                 for (uint64 i = buffLength; i > index; --i) {
                     new (&buffBuffer[i + len - 1]) T(Utilitys::move(buffBuffer[i - 1]));
@@ -317,33 +318,35 @@ namespace Core{
                     new (&buffBuffer[index + i]) T(arr.buffBuffer[i]);
                 buffLength = newLen;
             }
-            bool includes(T* includedData){
+            bool includes(T& includedData){
                 for(uint64 i=0;i<buffLength;i++)
                     if(buffBuffer[i]==includedData)
                         return true;
                 return false;
             }
             void shrinkTo(uint64 index){
+                if(buffLength==0) 
+                    return;
                 erase(index,buffLength-1);
             }
-            uint64 Count(const T* in){
+            uint64 Count(const T& in){
                 uint64 out=0;
                 for(uint64 i=0;i<buffLength;i++)
                     if(buffBuffer[i] == in)
                         out++;
                 return out;
             }
-            char* begin() {
+            T* begin() {
                 return buffBuffer;
              }
-            char* Send()   {
+            T* Send()   {
                 return buffBuffer + buffLength;
             }
 
-            const char* begin() const {
+            const T* begin() const {
                 return buffBuffer;
             }
-            const char* end()   const { 
+            const T* end()   const { 
                 return buffBuffer + buffLength; 
             }
     };
