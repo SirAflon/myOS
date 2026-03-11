@@ -1,7 +1,13 @@
 ; longmode.asm
 ; assembled as: nasm -f elf64
 ; entry: long_mode_start (32-bit protected mode)
+section .bss
+align 16
+stack_bottom:
+    resb 16384
+stack_top:
 
+section .text
 bits 32
 global long_mode_start
 extern KernelStart
@@ -29,6 +35,7 @@ long_mode_start:
     mov eax, cr0
     or eax, 1 << 31         ; PG
     mov cr0, eax
+    
     ; load 64-bit GDT and jump to long mode
     lgdt [gdt64_descriptor]
     jmp 0x08:long64
@@ -59,7 +66,7 @@ setup_hw32:
     out 0x21, al
     out 0xA1, al
 
-    mov al, 0x00        ; unmask all IRQs for now (you can change this)
+    mov al, 0x00        ; unmask all IRQs for now
     out 0x21, al
     out 0xA1, al
 
@@ -98,9 +105,8 @@ long64:
     mov fs, ax
     mov gs, ax
 
-    mov rsp, 0x90000
+    mov rsp, stack_top
     and rsp, -16
-
 
     mov rax, KernelStart
     jmp rax
@@ -164,5 +170,6 @@ pd:
     dq 0x03A00000 + (1 << 7) + 3      ; 58–60 MiB
     dq 0x03C00000 + (1 << 7) + 3      ; 60–62 MiB
     dq 0x03E00000 + (1 << 7) + 3      ; 62–64 MiB
+    dq 0x04000000 + (1 << 7) + 3      ; 64-66 MiB
 
 section .note.GNU-stack noalloc noexec nowrite progbits
