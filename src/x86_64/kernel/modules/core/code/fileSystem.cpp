@@ -138,8 +138,8 @@ namespace FileSystem{
     void rename(const Core::String& oldRawPath,const Core::String& newRawPath){
         Core::String oldPath = normalize(oldRawPath);
         Core::String newPath = normalize(newRawPath);
-        FileMeta* meta = fileTree.get(oldPath);
-        if(!meta)
+        Core::Trees::Data::DataPare meta = fileTree.get(oldPath);
+        if(!meta.legal)
             return;
     }
     void move(const Core::String& sourceRawPath,const Core::String& destinationRawPath){
@@ -150,15 +150,15 @@ namespace FileSystem{
         (void)rawPath;
     }
     bool exists(const Core::String& rawPath){
-        return fileTree.get(normalize(rawPath));
+        return fileTree.get(normalize(rawPath)).legal;
     }
     bool isDir(const Core::String& rawPath){
-        FileMeta* meta = fileTree.get(normalize(rawPath));
-        return (meta)? meta->isDirectory:false;
+        Core::Trees::Data::DataPare meta = fileTree.get(normalize(rawPath));
+        return (meta.legal)? fileTree.get(meta)->isDirectory:false;
     }
     bool isFile(const Core::String& rawPath){
-        FileMeta* meta = fileTree.get(normalize(rawPath));
-        return (meta)? !meta->isDirectory:false;
+        Core::Trees::Data::DataPare meta = fileTree.get(normalize(rawPath));
+        return (meta.legal)? !fileTree.get(meta)->isDirectory:false;
     }
     void saveJournal(){
 

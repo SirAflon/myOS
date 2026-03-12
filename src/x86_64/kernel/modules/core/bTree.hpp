@@ -3,7 +3,7 @@
 #include "optional.hpp"
 namespace Core{
     namespace Trees{
-        namespace bTree{
+        namespace Data{
             struct DataPare{
                 const bool legal;
                 const uint64 parentID;
@@ -27,15 +27,15 @@ namespace Core{
                     }
                 };
                 Core::ArrayList<node> nodes;
-                Core::Trees::bTree::DataPare searchRecursive(uint64 nodeID, const keyType& key) {
+                Core::Trees::Data::DataPare searchRecursive(uint64 nodeID, const keyType& key) {
                     node& n = nodes[nodeID];
                     uint64 i = 0;
                     while (i < n.keys.length() && key > n.keys[i])
                         i++;
                     if (i < n.keys.length() && key == n.keys[i])
-                        return Core::Trees::bTree::DataPare(true,nodeID,i);
+                        return Core::Trees::Data::DataPare(true,nodeID,i);
                     if (n.isLeaf) 
-                        return Core::Trees::bTree::DataPare(false,0,0);
+                        return Core::Trees::Data::DataPare(false,0,0);
                     uint64 childID = n.childrenID[i];
                     return searchRecursive(childID, key);
                 }
@@ -120,14 +120,14 @@ namespace Core{
             public:
                 bTree() = default;
             
-                Core::Trees::bTree::DataPare get(const keyType& key){
+                Core::Trees::Data::DataPare get(const keyType& key){
                     if(nodes.length() == 0) 
-                        return Core::Trees::bTree::DataPare(false,0,0);
+                        return Core::Trees::Data::DataPare(false,0,0);
                     return searchRecursive(0, key);
                 }
-                mdataType* get(Core::Trees::bTree::DataPare dp){
+                mdataType* get(Core::Trees::Data::DataPare dp){
                     if(dp.legal)
-                        return nodes[dp.parentID].mdata[dp.childID];
+                        return &nodes[dp.parentID].mdata[dp.childID];
                     return nullptr;
                 }
 
