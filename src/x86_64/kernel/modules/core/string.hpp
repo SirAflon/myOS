@@ -67,7 +67,7 @@ namespace Core {
             String cut(uint64,uint64);
             int64 find(char c)const;
             String subString(uint64,uint64)const;
-            void put(String,uint64);
+            void put(const String&,uint64);
             void resize(uint64,char);
             void reserve(uint64);
             void trim();
@@ -94,5 +94,6 @@ namespace Core {
 
             static uint64 CalcLength(const char*);
             static int compare(const char*,const char*);
+            static int compare(const String*,const String*);
     };
 }

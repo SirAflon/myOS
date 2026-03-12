@@ -94,13 +94,17 @@ namespace Core {
         if(len > strCapacity){
             if(hardCap)
                 len = strCapacity;
-            else
+            else{                
                 SetCapacity(len);
+                if(strCapacity<len)
+                    len = strCapacity;
+            }
         }
         for(uint64 i=0;i<len;++i)
             strBuffer[i] = s[i];
         strLength = len;
-        strBuffer[strLength] = '\0';
+        if(strBuffer)
+            strBuffer[strLength] = '\0';
         return *this;
     }
     String& String::operator+=(char rhs){
@@ -108,6 +112,8 @@ namespace Core {
         if(newLen > strCapacity && !hardCap){
             uint64 newCap = newLen *2;
             char* newBuffer = (char*)Allocator::Buddy::alloc(newCap+1);
+            if(!newBuffer)
+                return *this;
             for(uint64 i=0;i<strLength;++i)
                 newBuffer[i] = strBuffer[i];
             if(strBuffer)
@@ -128,6 +134,8 @@ namespace Core {
         if(newLen > strCapacity && !hardCap){
             uint64 newCap = newLen *2;
             char* newBuffer = (char*)Allocator::Buddy::alloc(newCap+1);
+            if(!newBuffer)
+                return *this;
             for(uint64 i=0;i<strLength;++i)
                 newBuffer[i] = strBuffer[i];
             if(strBuffer)
@@ -141,7 +149,8 @@ namespace Core {
         for(uint64 i=0;i<rhsLen;++i)
             strBuffer[strLength + i] = rhs[i];
         strLength = newLen;
-        strBuffer[strLength] = '\0';
+        if(strBuffer)
+            strBuffer[strLength] = '\0';
         return *this;
     }
     String& String::operator+=(const String& add){
@@ -150,6 +159,8 @@ namespace Core {
         if(newLen > strCapacity && !hardCap){
             uint64 newCap = newLen *2;
             char* newBuffer = (char*)Allocator::Buddy::alloc(newCap+1);
+            if(!newBuffer)
+                return *this;
             for(uint64 i=0;i<strLength;++i)
                 newBuffer[i] = strBuffer[i];
             if(strBuffer)
@@ -163,7 +174,8 @@ namespace Core {
         for (uint64 i=0;i<addLen;++i)
             strBuffer[strLength +i] = add.strBuffer[i];
         strLength = newLen;
-        strBuffer[strLength] = '\0';
+        if(strBuffer)
+            strBuffer[strLength] = '\0';
         return *this;
     }
     String String::operator+(char rhs)const{
@@ -196,9 +208,13 @@ namespace Core {
         return true;
     }
     bool String::operator==(const char* s)const{
-        Core::String tmp;
-        tmp += s;
-        return *this == tmp;
+        uint64 len = CalcLength(s);
+        if(len != strLength)
+            return false;
+        for(uint64 i=0;i<len;i++)
+            if(strBuffer[i]!=s[i])
+                return false;
+        return true;
     }
     bool String::operator!=(const String& s)const{
         return !(*this == s);
@@ -223,8 +239,9 @@ namespace Core {
     void String::pinit(const char* str,uint64 len,uint64 cap){
         strBuffer = (char*)Allocator::Buddy::alloc(cap+1);
         if(!strBuffer){
-            strLength=7;
-            strCapacity=10;
+            strBuffer = nullptr;
+            strLength=0;
+            strCapacity=0;
             return;
         }
 
@@ -245,13 +262,17 @@ namespace Core {
         if(hardCap)
             return;
         char* newBuffer = (char*)Allocator::Buddy::alloc(newCap+1);
-        for(uint64 i = 0; i < strLength; ++i)
+        if(!newBuffer) 
+            return;
+        uint64 copyLen = (strLength < newCap) ? strLength:newCap;
+        for(uint64 i = 0; i < copyLen; ++i)
             newBuffer[i] = strBuffer[i];
-        newBuffer[strLength] = '\0';
+        newBuffer[copyLen] = '\0';
         if(strBuffer)
             Allocator::Buddy::free(strBuffer);
         strBuffer = newBuffer;
         strCapacity = newCap;
+        strLength = copyLen;
     }
     bool String::hardCapacity()const{
         return hardCap;
@@ -362,7 +383,12 @@ namespace Core {
             out += strBuffer[index+i];
         return out;
     }
-    void String::put(String str,uint64 index){
+    void String::put(const String& str,uint64 index){
+        if(this == &str){
+            String copy(str);
+            put(copy,index);
+            return;
+        }
         uint64 len = str.length();
         if(index>strLength)
             index = strLength;
@@ -376,19 +402,24 @@ namespace Core {
         for(uint64 i=0;i<len;++i)
             strBuffer[index+i]=str[i];
         strLength = newLen;
-        strBuffer[strLength] ='\0';
+        if(strBuffer)
+            strBuffer[strLength] ='\0';
     }
     void String::resize(uint64 newLen,char fill = '\0'){
         if(newLen > strCapacity){
             if(hardCap)
                 newLen = strCapacity;
-            else
+            else{
                 SetCapacity(newLen);
+                if(strCapacity<newLen)
+                    newLen = strCapacity;
+            }
         }
         for(uint64 i=strLength;i<newLen;++i)
             strBuffer[i] = fill;
         strLength = newLen;
-        strBuffer[strLength]='\0';
+        if(strBuffer)
+            strBuffer[strLength]='\0';
     }
     void String::reserve(uint64 size){
         if(size<strCapacity)
@@ -403,7 +434,8 @@ namespace Core {
         uint64 i=0;
         while(i<strLength&&(strBuffer[i]==' '||strBuffer[i]=='\t'))
             i++;
-        erase(0,i-1);
+        if(i>0)
+            erase(0,i-1);
     }
     void String::trimRight(){
         if(strLength == 0)
@@ -411,7 +443,8 @@ namespace Core {
         uint64 i= strLength-1;
         while(i<strLength&&(strBuffer[i]==' '||strBuffer[i]=='\t'))
             i--;
-        erase(i+1,strLength-1);
+        if(i<strLength)
+            erase(i+1,strLength-1);
     }
     void String::replace(char o,char n){
         for(uint64 i=0;i<strLength;++i)
@@ -472,11 +505,10 @@ namespace Core {
         return out;
     }
     uint64 String::lastIndexOf(const char ch)const{
-        uint64 lastIndex=0;
-        for(uint64 i=0;i<strLength;i++)
+        for(uint64 i=strLength;i-->0;)
             if(strBuffer[i]==ch)
-                lastIndex = i;
-        return lastIndex;
+                return i;
+        return UINT64_MAX;
     }
     uint64 String::firstIndexOf(const char ch)const{
         for(uint64 i=0;i<strLength;i++)
@@ -500,10 +532,11 @@ namespace Core {
     Core::Array<Core::String> String::split(const char ch)const{
         Core::ArrayList<Core::String> arr(16);
         uint64 last=0;
-        for(uint64 i=0;i<strLength;i++){
-            if(strBuffer[i] == ch){
-                arr += getAt(last,i);
-                last = i;
+        for(uint64 i=0;i<=strLength;i++){
+            if(strBuffer[i] == ch||i == strLength){
+                if(i>last)
+                    arr += subString(last,i - last);
+                last = i+1;
             }
         }
         return Core::Array<Core::String>(arr);
@@ -522,5 +555,8 @@ namespace Core {
             b++;
         }
         return (unsigned char)*a - (unsigned char)*b;
+    }
+    int String::compare(const String* a,const String* b){
+        return compare(a->buffer(),b->buffer());
     }
 }
