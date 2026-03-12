@@ -1,7 +1,15 @@
 #pragma once
 #include "comHeader/array+arrayList.hpp"
+#include "optional.hpp"
 namespace Core{
     namespace Trees{
+        namespace bTree{
+            struct DataPare{
+                const bool legal;
+                const uint64 parentID;
+                const uint64 childID;
+            };
+        }
         template<typename keyType,typename mdataType>
         struct bTree{
             private:
@@ -19,15 +27,15 @@ namespace Core{
                     }
                 };
                 Core::ArrayList<node> nodes;
-                mdataType* searchRecursive(uint64 nodeID, const keyType& key) {
+                Core::Trees::bTree::DataPare searchRecursive(uint64 nodeID, const keyType& key) {
                     node& n = nodes[nodeID];
                     uint64 i = 0;
                     while (i < n.keys.length() && key > n.keys[i])
                         i++;
                     if (i < n.keys.length() && key == n.keys[i])
-                        return &n.mdata[i];
+                        return Core::Trees::bTree::DataPare(true,nodeID,i);
                     if (n.isLeaf) 
-                        return nullptr;
+                        return Core::Trees::bTree::DataPare(false,0,0);
                     uint64 childID = n.childrenID[i];
                     return searchRecursive(childID, key);
                 }
@@ -63,13 +71,13 @@ namespace Core{
                     return nodes.length() -1;
                 }
                 void splitChild(uint64 parentID, uint64 childIndex) {
-                    node& parent = nodes[parentID];
-                    uint64 fullChildID = parent.childrenID[childIndex];
-                    node& fullChild = nodes[fullChildID];
+                    uint64 fullChildID = nodes[parentID].childrenID[childIndex];
                     uint64 mid = maxKeys / 2;
-                    keyType midKey   = fullChild.keys[mid];
-                    mdataType midMeta = fullChild.mdata[mid];
-                    uint64 rightID = createNode(fullChild.isLeaf);
+                    keyType midKey   = nodes[fullChildID].keys[mid];
+                    mdataType midMeta = nodes[fullChildID].mdata[mid];
+                    uint64 rightID = createNode(nodes[fullChildID].isLeaf);
+                    node& parent = nodes[parentID];
+                    node& fullChild = nodes[fullChildID];
                     node& right = nodes[rightID];
                     for (uint64 i = mid + 1; i < fullChild.keys.length(); ++i) {
                         right.keys += fullChild.keys[i];
@@ -99,10 +107,11 @@ namespace Core{
                     uint64 childID = n.childrenID[i];
                     if(nodes[childID].keys.length() == maxKeys){
                         splitChild(nodeID, i);
-                        if(key>n.keys[i])
-                            childID = n.childrenID[i+1];
+                        node& n_ref = nodes[nodeID];
+                        if(key>n_ref.keys[i])
+                            childID = n_ref.childrenID[i+1];
                         else
-                            childID = n.childrenID[i];
+                            childID = n_ref.childrenID[i];
                     }
                     insertNonFull(childID, key, meta);
                 }
@@ -111,10 +120,15 @@ namespace Core{
             public:
                 bTree() = default;
             
-                mdataType* get(const keyType& key){
+                Core::Trees::bTree::DataPare get(const keyType& key){
                     if(nodes.length() == 0) 
-                        return nullptr;
+                        return Core::Trees::bTree::DataPare(false,0,0);
                     return searchRecursive(0, key);
+                }
+                mdataType* get(Core::Trees::bTree::DataPare dp){
+                    if(dp.legal)
+                        return nodes[dp.parentID].mdata[dp.childID];
+                    return nullptr;
                 }
 
                 void init(uint64 startCap){
