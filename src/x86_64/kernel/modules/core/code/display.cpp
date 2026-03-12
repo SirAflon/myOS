@@ -51,11 +51,15 @@ namespace Display{
         SetCursor(0,0);
     }
     void DeleteCharacterBehinde(){
+        if(cursorX <= 0)
+            return;
         SetCursor(cursorX-1,cursorY);
         print(" ");
         SetCursor(cursorX-1,cursorY);
     }
     void DeleteCharacterBefore(){
+        if(cursorX >= 79)
+            return;
         SetCursor(cursorX+1,cursorY);
         print(" ");
         SetCursor(cursorX+1,cursorY);

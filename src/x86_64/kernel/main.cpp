@@ -10,17 +10,16 @@ void KernelRun(){
     }
 }
 void initAllocator(){
-    uint8* bitmapBase = _kernel_end;
-    uint64 frameCount = 32768;
-    Allocator::Bitmap::init(bitmapBase, frameCount);
-    uint64 bitmapBytes = (frameCount + 7)/8;
-    uint8* rawHeapBase = bitmapBase + bitmapBytes;
-    uint64 align = 1ULL << Allocator::Buddy::MAX_ORDER;
-    uint64 aligned = ((uint64)rawHeapBase + align -1) & ~(align -1);
-    uint8* heapBase = (uint8*)aligned;
+    uint8* rawHeapBase = _kernel_end;
     uint64 heapEnd = 0x04000000; //64MiB if Heap is made bigger in longmode.asm pd must also be set bigger
-    uint64 heapSize = heapEnd - (uint64)heapBase;
-    Allocator::Buddy::init(heapBase, heapSize);
+    uint64 maxOrder = Allocator::Buddy::MAX_ORDER;
+    uint64 align = 1ULL << maxOrder;
+    uint64 alignedBase = ((uint64)rawHeapBase + align -1)& ~(align -1);
+    uint64 alignedEnd = heapEnd & ~(align -1);
+    if(alignedBase >= alignedEnd)
+        Display::panic("Allocator error. Base bigger as END");
+    uint64 heapSize = alignedEnd - alignedBase;
+    Allocator::Buddy::init((uint8*)alignedBase, heapSize);
 }
 
 extern "C" void KernelStart(){

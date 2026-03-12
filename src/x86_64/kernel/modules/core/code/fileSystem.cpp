@@ -91,6 +91,8 @@ namespace FileSystem{
             *arr += path;
     }
     void add(const Core::String& path, const FileMeta file){
+        (void) path;
+        (void) file;
         //fileTree.add(path,file);
         //addToIndex(path);
     }

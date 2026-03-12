@@ -67,19 +67,13 @@ namespace Allocator {
             for (uint64 i = 0; i < NUM_ORDERS; i++)
                 freeLists[i] = nullptr;
 
-            uint64 offset = 0;
-            while (offset + (1ULL << MIN_ORDER) <= heapSize) {
-                // choose largest block that fits at this offset
-                uint64 order = MAX_ORDER;
-                while (order > MIN_ORDER && (offset + (1ULL << order) > heapSize))
-                    order--;
-
-                uint64 blockSize = 1ULL << order;
-                FreeBlock* block = (FreeBlock*)(heapBase + offset);
-                block->next = freeLists[order - MIN_ORDER];
+            uint64 order = MAX_ORDER;
+            while (order >= MIN_ORDER && (1ULL << order)>heapSize)
+                order--;
+            if(order >= MIN_ORDER){
+                FreeBlock* block = (FreeBlock*)heapBase;
+                block->next = nullptr;
                 freeLists[order - MIN_ORDER] = block;
-
-                offset += blockSize;
             }
         }
 
