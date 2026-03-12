@@ -47,7 +47,7 @@ namespace Console {
     Core::String inputBuffer;
     static volatile bool newCommand = true;
     const int nameLength = 9;
-    char logScroll = 0;
+    uint64 logScroll = 0;
     static const char* name = "<Console>";
     char historyIndex = -1;
     void init(){
@@ -64,13 +64,10 @@ namespace Console {
         commandMap.insert("mkdir", CommandEntry{"mkdir",true,cmdMkdir,"creates new Directory"});
         commandMap.insert("mkfile", CommandEntry{"mkfile",true,cmdMkfile,"creates new File"});
     }
-    void döner(){
-        println("döner");
-    }
     void Execute(Core::String& com){
         log += Core::String("<Execute>") + com;
         historyIndex = -1;
-        logScroll = static_cast<char>(log.length());
+        logScroll = log.length();
         if(!com.isEmpty())
             history  += com;
         else{
@@ -149,7 +146,7 @@ namespace Console {
         log += pstr;
         Display::println(ch);
         pstr.clear();
-        logScroll = static_cast<char>(log.length());
+        logScroll = log.length();
         RenderLog();
     }
     void print(const char* ch){
@@ -159,12 +156,12 @@ namespace Console {
     void RenderLog(){
         Display::ClearScreen();
 
-        const char screenLines = Display::GetHeightInLines();
-        char total = static_cast<char>(log.length());
+        const uint64 screenLines = Display::GetHeightInLines();
+        uint64 total = log.length();
         if(logScroll + screenLines > total)
             logScroll = total > screenLines ? total - screenLines : 0;
-        for(char i=0;i<screenLines;i++){
-            char idx = logScroll +i;
+        for(uint64 i=0;i<screenLines;i++){
+            uint64 idx = logScroll +i;
             if(idx < total)
                 Display::println(log[idx].buffer());
             else
@@ -175,7 +172,7 @@ namespace Console {
         log += tmpstr;
         Display::NewLine();   
         tmpstr.clear();     
-        logScroll = static_cast<char>(log.length());
+        logScroll = log.length();
         RenderLog();
     }
     void ClearScreen(){

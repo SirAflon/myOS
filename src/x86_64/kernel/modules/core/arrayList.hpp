@@ -210,9 +210,13 @@ namespace Core{
                 return temp;
             }
             T& operator[](uint64 index){
+                if(index > buffLength)
+                    return buffBuffer[0];
                 return buffBuffer[index];
             }
             const T& operator[](uint64 index) const {
+                if(index > buffLength)
+                    return buffBuffer[0];
                 return buffBuffer[index];
             }
             bool operator==(const ArrayList<T>& other) const {
@@ -435,7 +439,7 @@ namespace Core{
             T* begin() {
                 return buffBuffer;
              }
-            T* Send()   {
+            T* end()   {
                 return buffBuffer + buffLength;
             }
 

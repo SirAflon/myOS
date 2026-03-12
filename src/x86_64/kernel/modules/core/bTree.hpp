@@ -58,8 +58,12 @@ namespace Core{
                     uint64 i=0;
                     while (i<n.keys.length()&&key> n.keys[i])
                         i++;
-                    n.keys.put(key, i);
-                    n.mdata.put(meta,i);
+                    Core::ArrayList<keyType> tmpKey;
+                    tmpKey += key;
+                    n.keys.put(tmpKey, i);
+                    Core::ArrayList<mdataType> tmpMeta;
+                    tmpMeta += meta;
+                    n.mdata.put(tmpMeta,i);
                 }
                 uint64 createNode(bool isLeaf){
                     node n;
@@ -90,8 +94,12 @@ namespace Core{
                     fullChild.mdata.shrinkTo(mid);
                     if (!fullChild.isLeaf)
                         fullChild.childrenID.shrinkTo(mid + 1);
-                    parent.keys.put(midKey, childIndex);
-                    parent.mdata.put(midMeta, childIndex);
+                    Core::ArrayList<keyType> tmpKey;
+                    tmpKey += midKey;
+                    parent.keys.put(tmpKey, childIndex);
+                    Core::ArrayList<mdataType> tmpMeta;
+                    tmpMeta += midMeta;
+                    parent.mdata.put(tmpMeta, childIndex);
                     parent.childrenID.put(rightID, childIndex + 1);
                 }
 
