@@ -32,7 +32,7 @@ namespace Core{
                 for(uint64 i=0;i<buffLength;++i)
                     new (&buffBuffer[i]) T(copy.buffBuffer[i]);
             }
-            void init(Core::Array<T>& move){
+            void init(Core::Array<T>&& move){
                 buffLength = move.length;
                 buffCapacity = move.buffLength;
                 buffBuffer=(T*)Allocator::Buddy::alloc(sizeof(T)*buffCapacity);
@@ -44,7 +44,7 @@ namespace Core{
             :buffBuffer(nullptr),
             buffLength(copy.buffLength),
             buffCapacity(copy.buffLength),
-            hardCap(copy.hardCap){
+            hardCap(false){
                 if(buffCapacity > 0){
                     buffBuffer = (T*)Allocator::Buddy::alloc(sizeof(T)*buffCapacity);
                     for(uint64 i=0;i<buffLength;++i)
@@ -55,7 +55,7 @@ namespace Core{
             :buffBuffer(nullptr),
             buffLength(move.buffLength),
             buffCapacity(move.buffLength),
-            hardCap(move.hardCap){
+            hardCap(false){
                 if(buffCapacity==0)
                     return;
                 buffBuffer = (T*)Allocator::Buddy::alloc(sizeof(T)*buffCapacity);
@@ -145,7 +145,7 @@ namespace Core{
                             newBuff[i] = buffBuffer[i];
                     } else {
                         for(uint64 i=0;i<buffLength;i++){
-                            new (&newBuff[i]) T(buffBuffer[i]);
+                            new (&newBuff[i]) T(Utilitys::move(buffBuffer[i]));
                             buffBuffer[i].~T();
                         }
                     }
@@ -176,7 +176,7 @@ namespace Core{
                     T* newBuff = (T*)Allocator::Buddy::alloc(sizeof(T) * newCap);
 
                     for(uint64 i = 0; i < buffLength; i++){
-                        new (&newBuff[i]) T(buffBuffer[i]);
+                        new (&newBuff[i]) T(Utilitys::move(buffBuffer[i]));
                         buffBuffer[i].~T();
                     }
 
@@ -192,14 +192,47 @@ namespace Core{
                 buffLength = needed;
                 return *this;
             }
+            ArrayList<T>& operator+=(ArrayList<T>&& move){
+                if(this == &move){
+                    ArrayList<T> copy(move);
+                    return *this += copy;
+                }
+                uint64 needed = buffLength + move.buffLength;
+
+                if(hardCap && needed > buffCapacity)
+                    needed = buffCapacity;
+
+                if(!hardCap && needed > buffCapacity){
+                    uint64 newCap = needed * 2;
+                    T* newBuff = (T*)Allocator::Buddy::alloc(sizeof(T) * newCap);
+
+                    for(uint64 i = 0; i < buffLength; i++){
+                        new (&newBuff[i]) T(Utilitys::move(buffBuffer[i]));
+                        buffBuffer[i].~T();
+                    }
+
+                    Allocator::Buddy::free(buffBuffer);
+                    buffBuffer = newBuff;
+                    buffCapacity = newCap;
+                }
+
+                uint64 toCopy = needed - buffLength;
+                for(uint64 i = 0; i < toCopy; i++)
+                    new (&buffBuffer[buffLength + i]) T(Utilitys::move(move.buffBuffer[i]));
+
+                buffLength = needed;
+                return *this;
+            }
             ArrayList<T> operator+(const Core::Array<T>& rhs) const {
                 ArrayList<T> temp(*this);
+                temp.reserve(buffLength+rhs.buffLength);
                 for(uint64 i = 0; i < rhs.buffLength; i++)
                     temp += rhs.buffBuffer[i];
                 return temp;
             }
             ArrayList<T> operator+(const ArrayList<T>& rhs) const {
                 ArrayList<T> temp(*this);
+                temp.reserve(buffLength+rhs.buffLength);
                 for(uint64 i = 0; i < rhs.buffLength; i++)
                     temp += rhs.buffBuffer[i];
                 return temp;
@@ -210,13 +243,9 @@ namespace Core{
                 return temp;
             }
             T& operator[](uint64 index){
-                if(index > buffLength)
-                    return buffBuffer[0];
                 return buffBuffer[index];
             }
             const T& operator[](uint64 index) const {
-                if(index > buffLength)
-                    return buffBuffer[0];
                 return buffBuffer[index];
             }
             bool operator==(const ArrayList<T>& other) const {
@@ -263,7 +292,7 @@ namespace Core{
                 T* newBuff = (T*)Allocator::Buddy::alloc(sizeof(T) * newCap);
                 uint64 toCopy = (buffLength < newCap) ? buffLength : newCap;
                 for (uint64 i = 0; i < toCopy; ++i) {
-                    new (&newBuff[i]) T(buffBuffer[i]);
+                    new (&newBuff[i]) T(Utilitys::move(buffBuffer[i]));
                     buffBuffer[i].~T();
                 }
                 for (uint64 i = toCopy; i < buffLength; ++i)
@@ -280,6 +309,10 @@ namespace Core{
                 hardCap = set;
             }
             void SetHardCapacity(uint64 newCap) {
+                if(newCap == buffCapacity){
+                    hardCap=true;
+                    return;
+                }
                 hardCap = false;
                 SetCapacity(newCap);
                 hardCap = true;
@@ -299,27 +332,28 @@ namespace Core{
                     return;
                 SetCapacity(buffLength);
             }
-            Optional<T> at(uint64 index) {
-                return (index < buffLength) ? &buffBuffer[index] : nullptr;
-            }
-            const T* at(uint64 index) const {
-                return (index < buffLength) ? &buffBuffer[index] : nullptr;
+            Optional<T> at(uint64 index) const {
+                if(index >= buffLength)
+                    return Optional<T>();
+                return Optional<T>(buffBuffer[index]);
             }
 
-            ArrayList<T> at(uint64 index1, uint64 index2) const {
+            Optional<ArrayList<T>> at(uint64 index1, uint64 index2) const {
                 if (index1 >= buffLength || index2 >= buffLength)
-                    return ArrayList(0);
+                    return Optional<ArrayList<T>>();
                 uint64 start = (index1 < index2) ? index1 : index2;
                 uint64 end = (index1 > index2) ? index1 : index2;
                 ArrayList tmp(end - start + 1);
                 tmp.SetHardCapacity(false);
                 for (uint64 i = start; i <= end; ++i)
                     tmp += buffBuffer[i];
-                return tmp;
+                return Optional<ArrayList<T>>(tmp);
             }
-            Core::Array<T> atArray(uint64 index1,uint64 index2){
-                ArrayList<T> tmp = at(index1,index2);
-                return Core::Array<T>(Utilitys::move(tmp));
+            Optional<Core::Array<T>> atArray(uint64 index1,uint64 index2)const{
+                auto opt = at(index1,index2);
+                if(!opt) 
+                    return Optional<Array<T>>();
+                return Optional<Array<T>>(Core::Array<T>(Utilitys::move(opt.value())));
             }
             bool isEmpty() const {
                 return buffLength == 0;
@@ -349,34 +383,36 @@ namespace Core{
                 buffLength -= count;
             }
             Optional<ArrayList<T>> cut(uint64 index1, uint64 index2) {
-                ArrayList tmp = at(index1, index2);
+                auto tmp = at(index1, index2);
                 erase(index1, index2);
                 return tmp;
             }
             Optional<Core::Array<T>> cutArray(uint64 index1, uint64 index2) {
-                ArrayList tmp = cut(index1,index2);
-                return Core::Array<T>(Utilitys::move(tmp));
+                auto tmp = cut(index1,index2);
+                if(!tmp)
+                    return Optional<Core::Array<T>>();
+                return Optional<Core::Array<T>>(Core::Array<T>(Utilitys::move(tmp.value())));
             }
             Optional<ArrayList<T>> subArrayList(uint64 index, uint64 count) const {
                 if (index >= buffLength)
-                    return ArrayList(0);
+                    return Optional<ArrayList<T>>();
                 if (index + count > buffLength)
                     count = buffLength - index;
                 ArrayList out(count);
                 out.SetHardCapacity(false);
                 for (uint64 i = 0; i < count; ++i)
                     out += buffBuffer[index + i];
-                return out;
+                return Optional<ArrayList<T>>(out);
             }
             Optional<Core::Array<T>> subArray(uint64 index, uint64 count) const {
                 if (index >= buffLength)
-                    return Core::Array<T>(0);
+                    return Optional<Core::Array<T>>();
                 if (index + count > buffLength)
                     count = buffLength - index;
                 Core::Array<T> out(count);
                 for (uint64 i = 0; i < count; ++i)
                     out += buffBuffer[index + i];
-                return out;
+                return Optional<Core::Array<T>>(out);
             }
             void put(const ArrayList& arr, uint64 index) {
                 if(this == &arr)
@@ -418,7 +454,7 @@ namespace Core{
             Core::Array<T> toArray(){
                 return Core::Array<T>(Utilitys::move(*this));
             }
-            bool includes(T& includedData){
+            bool includes(const T& includedData)const{
                 for(uint64 i=0;i<buffLength;i++)
                     if(buffBuffer[i]== includedData)
                         return true;
@@ -429,7 +465,7 @@ namespace Core{
                     return;
                 erase(index,buffLength-1);
             }
-            uint64 Count(const T& in){
+            uint64 Count(const T& in)const{
                 uint64 out=0;
                 for(uint64 i=0;i<buffLength;i++)
                     if(buffBuffer[i] == in)

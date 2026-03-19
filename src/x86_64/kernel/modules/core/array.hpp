@@ -318,7 +318,7 @@ namespace Core{
                     new (&buffBuffer[index + i]) T(arr.buffBuffer[i]);
                 buffLength = newLen;
             }
-            bool includes(T& includedData){
+            bool includes(const T& includedData)const{
                 for(uint64 i=0;i<buffLength;i++)
                     if(buffBuffer[i]==includedData)
                         return true;
@@ -329,7 +329,7 @@ namespace Core{
                     return;
                 erase(index,buffLength-1);
             }
-            uint64 Count(const T& in){
+            uint64 Count(const T& in)const{
                 uint64 out=0;
                 for(uint64 i=0;i<buffLength;i++)
                     if(buffBuffer[i] == in)
@@ -339,7 +339,7 @@ namespace Core{
             T* begin() {
                 return buffBuffer;
              }
-            T* Send()   {
+            T* end()   {
                 return buffBuffer + buffLength;
             }
 
