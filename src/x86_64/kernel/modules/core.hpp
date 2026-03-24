@@ -13,3 +13,4 @@
 #include "core/utilitys.hpp"
 #include "core/allocator.hpp"
 #include "core/fileSystem.hpp"
+#include "core/acpi.hpp"

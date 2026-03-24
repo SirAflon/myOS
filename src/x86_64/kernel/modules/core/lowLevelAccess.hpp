@@ -1,5 +1,6 @@
 #pragma once
 #include "dataTypes.hpp"
+#include "acpi.hpp"
 
 //
 // LowLevelAccess
@@ -28,4 +29,8 @@ namespace LowLevelAccess {
     void mmioWrite16(uintptr addr, uint16 val);
     void mmioWrite32(uintptr addr, uint32 val);
     void mmioWrite64(uintptr addr, uint64 val);
+    void shutdown();
+    void tripleFault();
+    void kbdReboot();
+    void reboot();
 }

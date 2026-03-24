@@ -187,4 +187,70 @@ namespace LowLevelAccess {
     void mmioWrite64(uintptr addr, uint64 val) {
         *(volatile uint64*)addr = val;
     }
+
+
+    void shutdown() {
+        ACPI::RSDP* rsdp = ACPI::find_rsdp();
+        if (!rsdp) return;
+
+        ACPI::FADT* fadt = reinterpret_cast<ACPI::FADT*>(ACPI::find_table(rsdp, "FACP"));
+        if (!fadt) return;
+
+        // SLP_TYP for S5 (Shutdown)
+        // Note: For real hardware, parsing the DSDT is required for the exact value.
+        // QEMU uses 0. Many BIOS use 5 or 7.
+        uint16 SLP_TYP = 0; 
+        uint16 SLP_EN = (1 << 13);
+        uint16 command = (SLP_TYP << 10) | SLP_EN;
+
+        out16((uint16)fadt->pm1a_cnt_blk, command);
+        if (fadt->pm1b_cnt_blk != 0) {
+            out16((uint16)fadt->pm1b_cnt_blk, command);
+        }
+        
+        // If ACPI fails, fall back to a hlt loop
+        while(1) { Hlt(); }
+    }
+    void kbdReboot() {
+        uint8 good = 0x02;
+        while (good & 0x02)
+            good = LowLevelAccess::in8(0x64);
+        LowLevelAccess::out8(0x64, 0xFE);
+    }
+    void tripleFault() {
+        struct [[gnu::packed]] {
+            uint16 limit = 0;
+            uint64 base = 0;
+        } idtr;
+        __asm__ volatile("lidt %0; int3" : : "m"(idtr));
+    }
+    void reboot() {
+        ACPI::RSDP* rsdp = ACPI::find_rsdp();
+        if (rsdp) {
+            ACPI::FADT* fadt = reinterpret_cast<ACPI::FADT*>(ACPI::find_table(rsdp, "FACP"));
+            
+            // Method 1: ACPI Reset (if supported)
+            if (fadt && (fadt->flags & (1 << 10))) {
+                if (fadt->reset_reg.address_space == 1) { // I/O Port
+                    out8(static_cast<uint16>(fadt->reset_reg.address), fadt->reset_value);
+                } else if (fadt->reset_reg.address_space == 0) { // MMIO
+                    mmioWrite8(static_cast<uintptr>(fadt->reset_reg.address), fadt->reset_value);
+                }
+            }
+        }
+
+        // Method 2: 8042 Keyboard Controller Pulse
+        // Send 'Reset' command to command port 0x64
+        uint8 temp;
+        do {
+            temp = in8(0x64);
+        } while (temp & 0x02); // Wait for input buffer to be empty
+        out8(0x64, 0xFE);
+
+        // Method 3: The Nuclear Option (Triple Fault)
+        tripleFault();
+
+        // If we reach here, hang the CPU
+        while (true) { __asm__ volatile("cli; hlt"); }
+    }
 }

@@ -39,6 +39,16 @@ void cmdLS(const Core::String& args){
     for(uint64 i=0;i<obj.length();i++)
         Console::println(obj[i].buffer());
 }
+void cmdShutdown(const Core::String& args){
+    if(args.isEmpty()){
+        LowLevelAccess::shutdown();
+    }
+}
+void cmdReboot(const Core::String& args){
+    if(args.isEmpty()){
+        LowLevelAccess::reboot();
+    }
+}
 Core::Hash::Map<const char*, CommandEntry> commandMap;
 namespace Console {
     Core::Array<Core::String> log;
@@ -63,6 +73,8 @@ namespace Console {
         commandMap.insert("ls", CommandEntry{"ls",true,cmdLS,"lists the objects in directory"});
         commandMap.insert("mkdir", CommandEntry{"mkdir",true,cmdMkdir,"creates new Directory"});
         commandMap.insert("mkfile", CommandEntry{"mkfile",true,cmdMkfile,"creates new File"});
+        commandMap.insert("shutdown", CommandEntry{"shutdown",true,cmdShutdown,"shuts the system down"});
+        commandMap.insert("reboot", CommandEntry{"reboot",true,cmdShutdown,"reboots the system"});
     }
     void Execute(Core::String& com){
         log += Core::String("<Execute>") + com;
