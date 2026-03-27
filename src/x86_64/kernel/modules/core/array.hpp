@@ -160,9 +160,13 @@ namespace Core{
                 return tmp;
             }
             T& operator[](uint64 index){
+                if(index >= buffLength)
+                    return nullptr;
                 return buffBuffer[index];
             }
             const T& operator[](uint64 index) const {
+                if(index >= buffLength)
+                    return nullptr;
                 return buffBuffer[index];
             }
             bool operator==(const Array<T>& other) const {

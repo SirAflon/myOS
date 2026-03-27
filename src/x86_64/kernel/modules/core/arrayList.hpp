@@ -243,9 +243,13 @@ namespace Core{
                 return temp;
             }
             T& operator[](uint64 index){
+                if(index >= buffLength)
+                    return nullptr;
                 return buffBuffer[index];
             }
             const T& operator[](uint64 index) const {
+                if(index >= buffLength)
+                    return nullptr;
                 return buffBuffer[index];
             }
             bool operator==(const ArrayList<T>& other) const {

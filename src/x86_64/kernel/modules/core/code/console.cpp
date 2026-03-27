@@ -74,7 +74,7 @@ namespace Console {
         commandMap.insert("mkdir", CommandEntry{"mkdir",true,cmdMkdir,"creates new Directory"});
         commandMap.insert("mkfile", CommandEntry{"mkfile",true,cmdMkfile,"creates new File"});
         commandMap.insert("shutdown", CommandEntry{"shutdown",true,cmdShutdown,"shuts the system down"});
-        commandMap.insert("reboot", CommandEntry{"reboot",true,cmdShutdown,"reboots the system"});
+        commandMap.insert("reboot", CommandEntry{"reboot",true,cmdReboot,"reboots the system"});
     }
     void Execute(Core::String& com){
         log += Core::String("<Execute>") + com;
